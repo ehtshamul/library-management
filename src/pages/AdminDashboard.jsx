@@ -1,0 +1,154 @@
+import React from "react";
+
+const AdminDashboard = () => {
+  return (
+    <div
+      className="relative flex size-full min-h-screen flex-col bg-slate-50 overflow-x-hidden"
+      style={{ fontFamily: 'Inter, "Noto Sans", sans-serif' }}
+    >
+      <div className="layout-container flex h-full grow flex-col">
+        {/* Welcome Section */}
+        <div className="px-40 flex flex-1 justify-center py-5">
+          <div className="layout-content-container flex flex-col max-w-[960px] flex-1">
+            <div className="flex flex-wrap justify-between gap-3 p-4">
+              <p className="text-[#0d141c] tracking-light text-[32px] font-bold leading-tight min-w-72">
+                Welcome back, Sarah {/* ✅ API: Replace with logged-in admin name */}
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-stretch">
+              <div className="flex flex-1 gap-3 flex-wrap px-4 py-3 justify-start">
+                <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#0d80f2] text-slate-50 text-sm font-bold">
+                  <span className="truncate">Add Book</span>
+                </button>
+                <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#e7edf4] text-[#0d141c] text-sm font-bold">
+                  <span className="truncate">Add User</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Overview Section */}
+            <h2 className="text-[#0d141c] text-[22px] font-bold px-4 pb-3 pt-5">Overview</h2>
+            <div className="flex flex-wrap gap-4 p-4">
+              {/* ✅ API: Replace numbers with backend counts */}
+              <div className="flex flex-1 flex-col gap-2 rounded-lg p-6 border border-[#cedbe8]">
+                <p className="text-base font-medium">Total Users</p>
+                <p className="text-2xl font-bold">1,250</p>
+              </div>
+              <div className="flex flex-1 flex-col gap-2 rounded-lg p-6 border border-[#cedbe8]">
+                <p className="text-base font-medium">Total Books</p>
+                <p className="text-2xl font-bold">3,500</p>
+              </div>
+              <div className="flex flex-1 flex-col gap-2 rounded-lg p-6 border border-[#cedbe8]">
+                <p className="text-base font-medium">Borrowed Books</p>
+                <p className="text-2xl font-bold">750</p>
+              </div>
+              <div className="flex flex-1 flex-col gap-2 rounded-lg p-6 border border-[#cedbe8]">
+                <p className="text-base font-medium">Pending Returns</p>
+                <p className="text-2xl font-bold">120</p>
+              </div>
+            </div>
+
+            {/* Trends Section */}
+            <h2 className="text-[22px] font-bold px-4 pb-3 pt-5">Trends</h2>
+            <div className="flex flex-wrap gap-4 px-4 py-6">
+              {/* Borrowing Trends Chart */}
+              <div className="flex flex-1 flex-col gap-2 rounded-lg border border-[#cedbe8] p-6 min-w-72">
+                <p className="text-base font-medium">Borrowing Trends</p>
+                <p className="text-[32px] font-bold truncate">+15%</p>
+                <div className="flex gap-1">
+                  <p className="text-[#49739c] text-base">Last 30 Days</p>
+                  <p className="text-[#078838] text-base font-medium">+15%</p>
+                </div>
+                <div className="flex min-h-[180px] flex-1 flex-col gap-8 py-4">
+                  {/* ✅ Placeholder chart until API integration */}
+                  <svg width="100%" height="148" viewBox="0 0 478 150">
+                    <rect width="100%" height="100%" fill="#e7edf4" />
+                    <text
+                      x="50%"
+                      y="50%"
+                      textAnchor="middle"
+                      fill="#49739c"
+                      dy=".3em"
+                    >
+                      Chart Here
+                    </text>
+                  </svg>
+                </div>
+              </div>
+
+              {/* Book Categories Chart */}
+              <div className="flex flex-1 flex-col gap-2 rounded-lg border border-[#cedbe8] p-6 min-w-72">
+                <p className="text-base font-medium">Book Categories</p>
+                <p className="text-[32px] font-bold truncate">30%</p>
+                <div className="flex gap-1">
+                  <p className="text-[#49739c] text-base">This Year</p>
+                  <p className="text-[#078838] text-base font-medium">+5%</p>
+                </div>
+                <div className="grid min-h-[180px] grid-flow-col gap-6 grid-rows-[1fr_auto] items-end justify-items-center px-3">
+                  {/* ✅ API: Replace heights with dynamic category counts */}
+                  <div className="border-t-2 border-[#49739c] bg-[#e7edf4] w-full" style={{ height: '90%' }}></div>
+                  <p className="text-[13px] font-bold text-[#49739c]">Fiction</p>
+                  <div className="border-t-2 border-[#49739c] bg-[#e7edf4] w-full" style={{ height: '40%' }}></div>
+                  <p className="text-[13px] font-bold text-[#49739c]">Non-Fiction</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Latest Activity */}
+            <h2 className="text-[22px] font-bold px-4 pb-3 pt-5">Latest Activity</h2>
+            <div className="px-4 py-3">
+              <div className="flex overflow-hidden rounded-lg border border-[#cedbe8] bg-slate-50">
+                <table className="flex-1">
+                  <thead>
+                    <tr className="bg-slate-50">
+                      <th className="px-4 py-3 text-left text-sm font-medium">User</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Book</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Review</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Rating</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* ✅ API: Map through latest reviews from DB */}
+                    <tr className="border-t border-[#cedbe8]">
+                      <td className="px-4 py-2">Emily Carter</td>
+                      <td className="px-4 py-2">The Secret Garden</td>
+                      <td className="px-4 py-2 text-[#49739c]">A timeless classic!</td>
+                      <td className="px-4 py-2">
+                        <button className="rounded-lg h-8 px-4 bg-[#e7edf4] text-sm font-medium w-full">
+                          5 stars
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Recently Added Books */}
+            <h2 className="text-[22px] font-bold px-4 pb-3 pt-5">Recently Added Books</h2>
+            <div className="flex overflow-y-auto">
+              <div className="flex items-stretch p-4 gap-3">
+                {/* ✅ API: Map through recently added books */}
+                <div className="flex flex-col gap-4 min-w-40">
+                  <div
+                    className="w-full bg-center bg-cover aspect-[3/4] rounded-lg"
+                    style={{ backgroundImage: `url('https://placehold.co/150x200')` }}
+                  ></div>
+                  <div>
+                    <p className="text-base font-medium">The Silent Observer</p>
+                    <p className="text-sm text-[#49739c]">by Amelia Hayes</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AdminDashboard;
