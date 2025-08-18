@@ -5,9 +5,11 @@ export default function Home() {
 
 
   return (
+    <>
+      <Nav />
     <div className="min-h-screen bg-slate-50 flex flex-col items-center px-6 md:px-20 py-10 font-['Plus_Jakarta_Sans','Noto_Sans',sans-serif]">
       {/* Hero Section */}
-      <Nav/>
+      
 
       <div
         className="w-full max-w-6xl flex flex-col items-center justify-center text-center rounded-2xl p-10 md:p-16 bg-cover bg-center bg-no-repeat shadow-md"
@@ -121,7 +123,9 @@ export default function Home() {
           Get Started
         </button>
       </div>
-      <Footer/>
+    
     </div>
+      <Footer/>
+    </>
   );
 }
