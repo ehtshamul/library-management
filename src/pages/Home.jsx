@@ -5,14 +5,14 @@ export default function Home() {
 
 
   return (
-    <>
+    <div className=" bg-slate-50">
       <Nav />
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center px-6 md:px-20 py-10 font-['Plus_Jakarta_Sans','Noto_Sans',sans-serif]">
+    <div className="pt-10 bg-slate-50 flex flex-col items-center px-6 md:px-20 py-10 font-['Plus_Jakarta_Sans','Noto_Sans',sans-serif]">
       {/* Hero Section */}
       
 
       <div
-        className="w-full max-w-6xl flex flex-col items-center justify-center text-center rounded-2xl p-10 md:p-16 bg-cover bg-center bg-no-repeat shadow-md"
+        className=" flex flex-col items-center justify-center text-center rounded-2xl p-10 md:p-16 bg-cover bg-center bg-no-repeat shadow-md"
         style={{
           backgroundImage:
             "linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('https://lh3.googleusercontent.com/aida-public/AB6AXuATFJzzDu5JlyjJATSwkYz4ecVg-Gt9lQvR53Re9mc6smuQhJmo19vFBaTXSjQHABHvp_dUwGaRg9uiNtGdZm5qsumpypxDDAQJ1GqTyfO8wV9_Oz3Kicxjqy_P9BZ-DcWTIkdTlNOEl8UIZXwFGlSgfcjRY5rf8SP2CnIJoEC6acb67Zp0tAFJEWL9UWpq5mSTnbijSW4WE2uAg_EvPBOZDwPt2b3rLIu5nGQG8b72xMAjT0lQ3jaRFR3cQh-eWpsIb_OIJgIKrW--')",
@@ -126,6 +126,6 @@ export default function Home() {
     
     </div>
       <Footer/>
-    </>
+    </div>
   );
 }

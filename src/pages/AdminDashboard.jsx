@@ -1,6 +1,12 @@
 import React from "react";
-
+import AddBookForm from "./Addbook";
+import { useState } from "react";
 const AdminDashboard = () => {
+let [showAddbook, setShowAddbook]=useState(false);
+const toggleAddBook = () => {
+    setShowAddbook(!showAddbook);
+  };
+
   return (
     <div
       className="relative flex size-full min-h-screen flex-col bg-slate-50 overflow-x-hidden"
@@ -19,12 +25,15 @@ const AdminDashboard = () => {
             {/* Action Buttons */}
             <div className="flex justify-stretch">
               <div className="flex flex-1 gap-3 flex-wrap px-4 py-3 justify-start">
-                <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#0d80f2] text-slate-50 text-sm font-bold">
+                <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#0d80f2] text-slate-50 text-sm font-bold" onClick={toggleAddBook}>
                   <span className="truncate">Add Book</span>
                 </button>
-                <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#e7edf4] text-[#0d141c] text-sm font-bold">
-                  <span className="truncate">Add User</span>
-                </button>
+                {showAddbook && (
+                  <div className="w-full">
+                    <AddBookForm />
+                  </div>
+                )}
+                
               </div>
             </div>
 

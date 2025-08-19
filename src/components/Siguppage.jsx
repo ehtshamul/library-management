@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Nav from "./Nav";
 import Footer from "./Footer";
 import axios from "axios";
+import { signup } from "../server/auth"; // Adjust the import path as needed
 
 function SignupPage() {
   const [formdata, setFormdata] = useState({
@@ -212,6 +213,7 @@ function SignupPage() {
                 <option value="">-- Select Role --</option>
                 <option value="User">User</option>
                 <option value="Admin">Admin</option>
+                <option value="Admin">librarian</option>
               </select>
               {errors.role && (
                 <p className="text-red-500 text-xs mt-1">{errors.role}</p>

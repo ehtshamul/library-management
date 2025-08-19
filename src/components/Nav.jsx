@@ -4,8 +4,8 @@ import { Link } from "react-router-dom";
 export default function Nav() {
   return (
     <div
-      className="relative flex flex-col bg-slate-50 overflow-x-hidden"
-      style={{ fontFamily: '"Plus Jakarta Sans", "Noto Sans", sans-serif' }}
+      // className="relative mb-36 flex flex-col bg-slate-50 overflow-x-hidden"
+      // style={{ fontFamily: '"Plus Jakarta Sans", "Noto Sans", sans-serif' }}
     >
       <div className="layout-container flex flex-col">
         {/* Header */}
@@ -64,7 +64,7 @@ export default function Nav() {
                   <path d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </summary>
-              <div className="absolute right-0 mt-2 w-48 rounded-xl border border-slate-200 bg-white shadow-lg p-2 z-50">
+              <div className="absolute right-0  w-48 rounded-xl border border-slate-200 bg-white shadow-lg p-2 z-50">
                 <Link
                   className="block px-3 py-2 text-sm hover:bg-slate-50 rounded-lg"
                   to="/browse"
