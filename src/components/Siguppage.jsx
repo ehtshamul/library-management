@@ -213,7 +213,7 @@ function SignupPage() {
                 <option value="">-- Select Role --</option>
                 <option value="User">User</option>
                 <option value="Admin">Admin</option>
-                <option value="Admin">librarian</option>
+                
               </select>
               {errors.role && (
                 <p className="text-red-500 text-xs mt-1">{errors.role}</p>

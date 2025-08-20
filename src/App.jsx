@@ -7,6 +7,7 @@ import ForgotPassword from "./components/forgetpassword";
 import SignupPage from "./components/Siguppage"; // Corrected import path
 import Home from "./pages/Home"; // Assuming you have a Home component
 import AdminDashboard from "./pages/AdminDashboard";
+import AddBookForm from "./pages/Addbook";
 
 function App() {
   return (
@@ -20,6 +21,8 @@ function App() {
         <Route path='/forgot-password' element={<ForgotPassword />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/book/:id/edit" element={<AddBookForm mode='edit' />} />
+        <Route path="/book/create" element={<AddBookForm mode='create' />} />
 
         {/* ...other routes */}
       </Routes>

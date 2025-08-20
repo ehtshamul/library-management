@@ -44,6 +44,8 @@ function LoginPage() {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
+      // Show success message
+
       toast.success("Login successful!");
 
       // Navigate based on role

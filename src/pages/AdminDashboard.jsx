@@ -1,24 +1,83 @@
 import React from "react";
 import AddBookForm from "./Addbook";
 import { useState } from "react";
+import { useEffect } from "react";
+import { Dashboard,getAllBooks,getLatestBook } from "../server/auth"; 
+import Nav from "../components/Nav";
+// Import the Dashboard API function
+
+import axios from "axios";
+import {  useNavigate } from "react-router-dom"; // Import useNavigate for redirection
 const AdminDashboard = () => {
 let [showAddbook, setShowAddbook]=useState(false);
+let [adminData, setAdminData] = useState(null); // State to hold admin data
+let [books, setBooks] = useState([]); // State to hold books data
+let [latestBook, setLatestBook] = useState(); // State to hold latest book data
+
+
 const toggleAddBook = () => {
     setShowAddbook(!showAddbook);
   };
+// ✅ API: Fetch admin data and statistics from backend
+const navigate = useNavigate();
+ const handleEdit = (bookId) => {
+  navigate(`/book/${bookId}/edit`); // ✅ updated path
+  console.log(`/book/${bookId}/edit`); // ✅ log new path
+};
 
-  return (
+
+
+
+  useEffect(() => {
+  const fetchDashboardData = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/");
+        return;
+      }
+
+      // 1. Fetch admin/user data
+      const response = await Dashboard(); 
+      setAdminData(response.data.user);
+
+      // 2. Fetch all books (check backend response)
+      const booksResponse = await getAllBooks();
+      setBooks(booksResponse.data); // If backend sends { books: [] } then use .data.books
+
+      // 3. Fetch latest book (check backend response)
+      const latestBookResponse = await getLatestBook();
+    
+     
+      setLatestBook(latestBookResponse.data); // If backend sends { book: {...} } then use .data.book
+
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+        localStorage.removeItem("token");
+        navigate("/");
+      }
+    }
+  };
+
+  fetchDashboardData();
+}, [navigate]);
+
+
+return (
     <div
       className="relative flex size-full min-h-screen flex-col bg-slate-50 overflow-x-hidden"
       style={{ fontFamily: 'Inter, "Noto Sans", sans-serif' }}
     >
+      {/* Navigation Bar */}
+      <Nav />
       <div className="layout-container flex h-full grow flex-col">
         {/* Welcome Section */}
         <div className="px-40 flex flex-1 justify-center py-5">
           <div className="layout-content-container flex flex-col max-w-[960px] flex-1">
             <div className="flex flex-wrap justify-between gap-3 p-4">
               <p className="text-[#0d141c] tracking-light text-[32px] font-bold leading-tight min-w-72">
-                Welcome back, Sarah {/* ✅ API: Replace with logged-in admin name */}
+              {adminData && <span>Welcome back {adminData.name}</span>}{/* ✅ API: Replace with logged-in admin name */}
               </p>
             </div>
 
@@ -47,7 +106,7 @@ const toggleAddBook = () => {
               </div>
               <div className="flex flex-1 flex-col gap-2 rounded-lg p-6 border border-[#cedbe8]">
                 <p className="text-base font-medium">Total Books</p>
-                <p className="text-2xl font-bold">3,500</p>
+                <p className="text-2xl font-bold">  {books.length} </p>
               </div>
               <div className="flex flex-1 flex-col gap-2 rounded-lg p-6 border border-[#cedbe8]">
                 <p className="text-base font-medium">Borrowed Books</p>
@@ -137,21 +196,44 @@ const toggleAddBook = () => {
 
             {/* Recently Added Books */}
             <h2 className="text-[22px] font-bold px-4 pb-3 pt-5">Recently Added Books</h2>
-            <div className="flex overflow-y-auto">
-              <div className="flex items-stretch p-4 gap-3">
-                {/* ✅ API: Map through recently added books */}
-                <div className="flex flex-col gap-4 min-w-40">
-                  <div
-                    className="w-full bg-center bg-cover aspect-[3/4] rounded-lg"
-                    style={{ backgroundImage: `url('https://placehold.co/150x200')` }}
-                  ></div>
-                  <div>
-                    <p className="text-base font-medium">The Silent Observer</p>
-                    <p className="text-sm text-[#49739c]">by Amelia Hayes</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            
+           {books && books.length > 0 ? (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+    {books.map((book) => (
+      <div
+        key={book._id}
+        className="flex flex-col gap-4 bg-white shadow-md rounded-lg p-4 hover:shadow-lg transition"
+      >
+        {/* ✅ Book Cover */}
+        <div className="w-full bg-center bg-cover aspect-[3/4] rounded-lg overflow-hidden">
+          <img
+            src={`http://localhost:7000/${book.coverImage}`}
+            alt={book.title}
+            className="w-full h-full object-cover rounded-lg"
+          />
+        </div>
+
+        {/* ✅ Book Details */}
+        <div className="flex flex-col flex-grow">
+          <p className="text-lg font-semibold">{book.title}</p>
+          <p className="text-sm text-gray-600 mb-3">by {book.author}</p>
+
+          {/* ✅ Edit Button */}
+          <button
+            onClick={() => handleEdit(book._id)} // 👈 define this function
+            className="mt-auto bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          >
+            Edit
+          </button>
+        </div>
+      </div>
+    ))}
+  </div>
+) : (
+  <p className="text-center text-gray-500">No books available</p>
+)}
+
+            {/* //end // */}
 
           </div>
         </div>
