@@ -1,10 +1,10 @@
 // AuthContext.jsx
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import jwt_decode from "jwt-decode";
-import { Dashboard } from "./server/auth";
 
-const AuthContext = createContext();
+import { Dashboard, login as authLogin, logout as authLogout } from "../server/auth";
+
+export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -43,7 +43,7 @@ export function AuthProvider({ children }) {
 
   const login = async (loginData) => {
     try {
-      const response = await login(loginData);
+      const response = await authLogin(loginData);
       const { accessToken, user: userData } = response.data;
       
       if (accessToken && userData) {
@@ -75,7 +75,7 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      await logout();
+      await authLogout();
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
@@ -101,10 +101,3 @@ export function AuthProvider({ children }) {
   );
 }
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};

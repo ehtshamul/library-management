@@ -1,6 +1,6 @@
 const { body } = require("express-validator");
 
-createBookValidator = [
+const createBookValidator = [
   body("title")
     .notEmpty().withMessage("Title is required")
     .isLength({ min: 2 }).withMessage("Title must be at least 2 characters long"),

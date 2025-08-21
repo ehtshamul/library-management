@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
 import AddBookForm from "./Addbook";
-import { Dashboard, getAllBooks, getLatestBook } from "../server/auth";
+import { Dashboard, getAllBooks } from "../server/auth";
 import Nav from "../components/Nav";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth.js";
 
 const AdminDashboard = () => {
   const [showAddbook, setShowAddbook] = useState(false);
   const [adminData, setAdminData] = useState(null);
   const [books, setBooks] = useState([]);
-  const [latestBook, setLatestBook] = useState(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   
@@ -44,9 +44,8 @@ const AdminDashboard = () => {
         const booksResponse = await getAllBooks();
         setBooks(booksResponse.data.books || booksResponse.data);
 
-        // Fetch latest book
-        const latestResponse = await getLatestBook();
-        setLatestBook(latestResponse.data.book || latestResponse.data);
+        // Fetch latest book (for future use)
+        // const latestResponse = await getLatestBook();
 
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
