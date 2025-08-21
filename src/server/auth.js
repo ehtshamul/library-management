@@ -1,5 +1,5 @@
 // src/server/auth.js
-import { Api, getBooks } from "./api";
+import { Api, WebApi } from "./api";
 
 // ================== AUTH APIs ==================
 export const login = (formData) => Api.post("/login", formData);
@@ -10,15 +10,16 @@ export const logout = () => Api.post("/logout");
 
 // ================== BOOKS APIs ==================
 export const AddBook = (bookdata) =>
-  getBooks.post("/books", bookdata, {
+  Api.post("/books", bookdata, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 
 export const updateBook = (id, bookdata) =>
-  getBooks.put(`/books/${id}`, bookdata, {
+  Api.put(`/books/${id}`, bookdata, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 
-export const getAllBooks = () => getBooks.get("/books");
-export const getLatestBook = () => getBooks.get("/books/latest");
-export const getBookById = (id) => getBooks.get(`/books/${id}`);
+// Public web routes for fetching books
+export const getAllBooks = () => WebApi.get("/getbooks");
+export const getLatestBook = () => WebApi.get("/getbooklatest");
+export const getBookById = (id) => Api.get(`/books/${id}`);

@@ -1,7 +1,7 @@
 // Nav.jsx
 import React from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../server/AuthContext.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 
 
 export default function Nav() {

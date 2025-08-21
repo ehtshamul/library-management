@@ -12,10 +12,15 @@ const cookieParser = require("cookie-parser");
 // Load environment variables first
 dotenv.config();
 
-// Check for required environment variables
+// Check for required environment variables (warn in development)
 if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
-  console.error("❌ FATAL ERROR: JWT_SECRET or JWT_REFRESH_SECRET is not defined");
-  process.exit(1);
+  const message = "JWT secrets are not defined. Set JWT_SECRET and JWT_REFRESH_SECRET in .env";
+  if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+    console.warn("⚠️  " + message);
+  } else {
+    console.error("❌ FATAL ERROR: " + message);
+    process.exit(1);
+  }
 }
 
 // Get the current directory path
@@ -46,7 +51,9 @@ const getBooksRouter = require("./config/routes/web/getbooks");
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 3000,
+    });
     console.log("✅ MongoDB connected successfully");
 
     app.listen(process.env.PORT, () => {

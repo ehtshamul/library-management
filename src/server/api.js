@@ -7,15 +7,15 @@ export const Api = axios.create({
   withCredentials: true,
 });
 
-// Books API instance
-export const getBooks = axios.create({
-  baseURL: "http://localhost:7000/api/auth", // Changed from /api/web to /api/auth
+// Public/Web API instance (for listing/fetching books)
+export const WebApi = axios.create({
+  baseURL: "http://localhost:7000/api/web",
   withCredentials: true,
 });
 
 // Attach token automatically to both instances
-[Api, getBooks].forEach(instance => {
-  instance.interceptors.request.use(config => {
+[Api, WebApi].forEach((instance) => {
+  instance.interceptors.request.use((config) => {
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
