@@ -3,7 +3,7 @@ import AddBookForm from "./Addbook";
 import { Dashboard, getAllBooks, getLatestBook } from "../server/auth";
 import Nav from "../components/Nav";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const AdminDashboard = () => {
   const [showAddbook, setShowAddbook] = useState(false);
