@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App.jsx';
 import './index.css';
-import { AuthProvider } from './server/AuthContext.jsx'; // Fixed import
+import { AuthProvider } from './context/AuthContext.jsx'; // Corrected import path
 
 const root = createRoot(document.getElementById('root'));
 
@@ -12,7 +12,7 @@ root.render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <App /> {/* App is wrapped inside AuthProvider */}
+        <App />
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>

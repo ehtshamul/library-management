@@ -1,10 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { AddBook, updateBook,getBookById } from "../server/auth"; // Now this import will work
+import { AddBook, updateBook, getBookById } from "../server/auth";
 import { useNavigate, useParams } from "react-router-dom";
 
-// Rest of your component code remains the same
-
-// Tag input component (unchanged)
+// Tag input component
 const TagInput = ({ tags, onTagsChange }) => {
   const [inputValue, setInputValue] = useState("");
 
@@ -52,7 +50,7 @@ const TagInput = ({ tags, onTagsChange }) => {
 };
 
 // Main AddBookForm
-export default function AddBookForm({ mode = "add" }) {
+export default function AddBookForm({ mode = "add", onSuccess }) {
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -102,7 +100,7 @@ export default function AddBookForm({ mode = "add" }) {
             author: book.author || "",
             coAuthors: book.coAuthors || "",
             publisher: book.publisher || "",
-            pubDate: book.pubDate || "",
+            pubDate: book.pubDate ? book.pubDate.split('T')[0] : "",
             edition: book.edition || "",
             description: book.description || "",
             isbn: book.isbn || "",
@@ -115,7 +113,7 @@ export default function AddBookForm({ mode = "add" }) {
             copies: book.copies || 1,
             shelf: book.shelf || "",
             condition: book.condition || "Good",
-            coverImage: null, // Keep as null to avoid file issues
+            coverImage: null,
             previewLink: book.previewLink || "",
             keywords: keywordsArray,
             audience: book.audience || "",
@@ -164,30 +162,15 @@ export default function AddBookForm({ mode = "add" }) {
       const formData = new FormData();
 
       // Append all fields
-      formData.append("title", bookData.title);
-      formData.append("author", bookData.author);
-      formData.append("coAuthors", bookData.coAuthors);
-      formData.append("publisher", bookData.publisher);
-      formData.append("pubDate", bookData.pubDate);
-      formData.append("edition", bookData.edition);
-      formData.append("description", bookData.description);
-      formData.append("isbn", bookData.isbn);
-      formData.append("language", bookData.language);
-      formData.append("genre", bookData.genre);
-      formData.append("audience", bookData.audience);
-      formData.append("shelf", bookData.shelf);
-      formData.append("condition", bookData.condition);
-      formData.append("previewLink", bookData.previewLink);
-
-      // Numeric fields
-      formData.append("pages", Number(bookData.pages));
-      formData.append("copies", Number(bookData.copies));
-      formData.append("dewey", Number(bookData.dewey));
-
-      // Arrays as JSON strings
-      formData.append("categories", JSON.stringify(bookData.categories));
-      formData.append("tags", JSON.stringify(bookData.tags));
-      formData.append("keywords", JSON.stringify(bookData.keywords));
+      Object.keys(bookData).forEach(key => {
+        if (key !== 'coverImage') {
+          if (Array.isArray(bookData[key])) {
+            formData.append(key, JSON.stringify(bookData[key]));
+          } else {
+            formData.append(key, bookData[key]);
+          }
+        }
+      });
 
       // File
       if (bookData.coverImage) {
@@ -196,23 +179,24 @@ export default function AddBookForm({ mode = "add" }) {
 
       let response;
       if (mode === "edit" && id) {
-        // Update existing book
         response = await updateBook(id, formData);
         setMessage({
           type: "success",
           text: response.data.message || "Book updated successfully!",
         });
-        // Optionally navigate away after successful update
-        // navigate("/books");
+        
+        // Navigate back after a short delay
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 1500);
       } else {
-        // Add new book
         response = await AddBook(formData);
         setMessage({
           type: "success",
           text: response.data.message || "Book added successfully!",
         });
         
-        // Reset form only for add mode
+        // Reset form
         setBookData({
           title: "",
           author: "",
@@ -238,6 +222,11 @@ export default function AddBookForm({ mode = "add" }) {
         });
 
         if (fileInputRef.current) fileInputRef.current.value = "";
+        
+        // Call success callback if provided
+        if (onSuccess) {
+          onSuccess();
+        }
       }
     } catch (error) {
       console.error("Error submitting book:", error);
@@ -251,8 +240,12 @@ export default function AddBookForm({ mode = "add" }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-      <div className="w-full max-w-5xl">
+    <div className="bg-slate-50 p-6">
+      <div className="w-full max-w-5xl mx-auto">
+        <h2 className="text-2xl font-bold mb-6">
+          {mode === "edit" ? "Edit Book" : "Add New Book"}
+        </h2>
+
         {message.text && (
           <div
             className={`mb-6 p-4 rounded-xl ${
@@ -269,242 +262,278 @@ export default function AddBookForm({ mode = "add" }) {
           onSubmit={handleSubmit}
           className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden"
         >
-          <div className="p-8 grid gap-6">
-            {/* Basic fields */}
-            <label>
-              Title*:
+          <div className="p-8 grid gap-6 md:grid-cols-2">
+            {/* Basic Information */}
+            <div className="md:col-span-2">
+              <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block mb-2 font-medium">Title*</label>
               <input
                 name="title"
                 value={bookData.title}
                 onChange={handleChange}
                 required
-                className="border rounded p-2 w-full"
+                className="border rounded-lg p-3 w-full"
               />
-            </label>
+            </div>
 
-            <label>
-              Author*:
+            <div>
+              <label className="block mb-2 font-medium">Author*</label>
               <input
                 name="author"
                 value={bookData.author}
                 onChange={handleChange}
                 required
-                className="border rounded p-2 w-full"
+                className="border rounded-lg p-3 w-full"
               />
-            </label>
+            </div>
 
-            <label>
-              Co-Authors:
+            <div>
+              <label className="block mb-2 font-medium">Co-Authors</label>
               <input
                 name="coAuthors"
                 value={bookData.coAuthors}
                 onChange={handleChange}
-                className="border rounded p-2 w-full"
+                className="border rounded-lg p-3 w-full"
               />
-            </label>
+            </div>
 
-            <label>
-              Publisher:
+            <div>
+              <label className="block mb-2 font-medium">Publisher</label>
               <input
                 name="publisher"
                 value={bookData.publisher}
                 onChange={handleChange}
-                className="border rounded p-2 w-full"
+                className="border rounded-lg p-3 w-full"
               />
-            </label>
+            </div>
 
-            <label>
-              Publication Date:
+            <div>
+              <label className="block mb-2 font-medium">Publication Date</label>
               <input
                 type="date"
                 name="pubDate"
                 value={bookData.pubDate}
                 onChange={handleChange}
-                className="border rounded p-2 w-full"
+                className="border rounded-lg p-3 w-full"
               />
-            </label>
+            </div>
 
-            <label>
-              Edition:
+            <div>
+              <label className="block mb-2 font-medium">Edition</label>
               <input
                 name="edition"
                 value={bookData.edition}
                 onChange={handleChange}
-                className="border rounded p-2 w-full"
+                className="border rounded-lg p-3 w-full"
               />
-            </label>
+            </div>
 
-            <label>
-              Description:
+            <div className="md:col-span-2">
+              <label className="block mb-2 font-medium">Description</label>
               <textarea
                 name="description"
                 value={bookData.description}
                 onChange={handleChange}
-                className="border rounded p-2 w-full"
+                rows={4}
+                className="border rounded-lg p-3 w-full"
               />
-            </label>
+            </div>
 
-            {/* Cataloging */}
-            <label>
-              ISBN*:
+            {/* Catalog Information */}
+            <div className="md:col-span-2 mt-6">
+              <h3 className="text-lg font-semibold mb-4">Catalog Information</h3>
+            </div>
+
+            <div>
+              <label className="block mb-2 font-medium">ISBN*</label>
               <input
                 name="isbn"
                 value={bookData.isbn}
                 onChange={handleChange}
                 required
-                className="border rounded p-2 w-full"
+                className="border rounded-lg p-3 w-full"
               />
-            </label>
+            </div>
 
-            <label>
-              Language:
+            <div>
+              <label className="block mb-2 font-medium">Language</label>
               <select
                 name="language"
                 value={bookData.language}
                 onChange={handleChange}
-                className="border rounded p-2 w-full"
+                className="border rounded-lg p-3 w-full"
               >
                 <option value="">Select Language</option>
-                <option>English</option>
-                <option>Urdu</option>
-                <option>Arabic</option>
-                <option>Chinese</option>
-                <option>French</option>
-                <option>German</option>
-                <option>Spanish</option>
+                <option value="English">English</option>
+                <option value="Urdu">Urdu</option>
+                <option value="Arabic">Arabic</option>
+                <option value="Chinese">Chinese</option>
+                <option value="French">French</option>
+                <option value="German">German</option>
+                <option value="Spanish">Spanish</option>
               </select>
-            </label>
+            </div>
 
-            <label>
-              Genre:
+            <div>
+              <label className="block mb-2 font-medium">Genre</label>
               <select
                 name="genre"
                 value={bookData.genre}
                 onChange={handleChange}
-                className="border rounded p-2 w-full"
+                className="border rounded-lg p-3 w-full"
               >
                 <option value="">Select Genre</option>
-                <option>Fiction</option>
-                <option>Non-Fiction</option>
-                <option>Science</option>
-                <option>Technology</option>
-                <option>History</option>
-                <option>Biography</option>
-                <option>Children</option>
+                <option value="Fiction">Fiction</option>
+                <option value="Non-Fiction">Non-Fiction</option>
+                <option value="Science">Science</option>
+                <option value="Technology">Technology</option>
+                <option value="History">History</option>
+                <option value="Biography">Biography</option>
+                <option value="Children">Children</option>
               </select>
-            </label>
+            </div>
 
-            {/* Categories */}
-            <label>
-              Categories:
+            <div>
+              <label className="block mb-2 font-medium">Audience</label>
+              <select
+                name="audience"
+                value={bookData.audience}
+                onChange={handleChange}
+                className="border rounded-lg p-3 w-full"
+              >
+                <option value="">Select Audience</option>
+                <option value="General">General</option>
+                <option value="Kids">Kids</option>
+                <option value="Teens">Teens</option>
+                <option value="Adults">Adults</option>
+              </select>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block mb-2 font-medium">Categories</label>
               <select
                 name="categories"
                 multiple
                 value={bookData.categories}
                 onChange={handleChange}
-                className="border rounded p-2 w-full"
+                className="border rounded-lg p-3 w-full h-32"
               >
-                <option>Computer Science</option>
-                <option>Programming</option>
-                <option>Self Help</option>
-                <option>Business</option>
-                <option>Design</option>
-                <option>Education</option>
-                <option>Health</option>
+                <option value="Computer Science">Computer Science</option>
+                <option value="Programming">Programming</option>
+                <option value="Self Help">Self Help</option>
+                <option value="Business">Business</option>
+                <option value="Design">Design</option>
+                <option value="Education">Education</option>
+                <option value="Health">Health</option>
               </select>
-            </label>
+              <p className="text-sm text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple</p>
+            </div>
 
-            {/* Tags */}
-            <label>
-              Tags:
+            <div className="md:col-span-2">
+              <label className="block mb-2 font-medium">Tags</label>
               <TagInput tags={bookData.tags} onTagsChange={handleTagsChange} />
-            </label>
+            </div>
 
-            <label>
-              Dewey Decimal:
+            <div>
+              <label className="block mb-2 font-medium">Dewey Decimal</label>
               <input
                 name="dewey"
                 value={bookData.dewey}
                 onChange={handleChange}
-                className="border rounded p-2 w-full"
+                className="border rounded-lg p-3 w-full"
               />
-            </label>
+            </div>
 
-            <label>
-              Pages:
+            <div>
+              <label className="block mb-2 font-medium">Pages</label>
               <input
                 name="pages"
                 type="number"
                 value={bookData.pages}
                 onChange={handleChange}
-                className="border rounded p-2 w-full"
+                className="border rounded-lg p-3 w-full"
               />
-            </label>
+            </div>
 
-            {/* Inventory */}
-            <label>
-              Copies:
+            {/* Inventory Information */}
+            <div className="md:col-span-2 mt-6">
+              <h3 className="text-lg font-semibold mb-4">Inventory Information</h3>
+            </div>
+
+            <div>
+              <label className="block mb-2 font-medium">Copies</label>
               <input
                 name="copies"
                 type="number"
                 value={bookData.copies}
                 onChange={handleChange}
-                className="border rounded p-2 w-full"
+                min="1"
+                className="border rounded-lg p-3 w-full"
               />
-            </label>
+            </div>
 
-            <label>
-              Shelf:
+            <div>
+              <label className="block mb-2 font-medium">Shelf Location</label>
               <input
                 name="shelf"
                 value={bookData.shelf}
                 onChange={handleChange}
-                className="border rounded p-2 w-full"
+                className="border rounded-lg p-3 w-full"
               />
-            </label>
+            </div>
 
-            <label>
-              Condition:
+            <div>
+              <label className="block mb-2 font-medium">Condition</label>
               <select
                 name="condition"
                 value={bookData.condition}
                 onChange={handleChange}
-                className="border rounded p-2 w-full"
+                className="border rounded-lg p-3 w-full"
               >
-                <option>Good</option>
-                <option>New</option>
-                <option>Fair</option>
-                <option>Poor</option>
+                <option value="Good">Good</option>
+                <option value="New">New</option>
+                <option value="Fair">Fair</option>
+                <option value="Poor">Poor</option>
               </select>
-            </label>
+            </div>
 
             {/* Media */}
-            <label>
-              Cover Image:
+            <div className="md:col-span-2 mt-6">
+              <h3 className="text-lg font-semibold mb-4">Media</h3>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block mb-2 font-medium">Cover Image</label>
               <input
                 type="file"
                 ref={fileInputRef}
                 onChange={handleCoverImageChange}
                 accept="image/*"
                 name="coverImage"
-                className="border rounded p-2 w-full"
+                className="border rounded-lg p-3 w-full"
               />
-              {bookData.coverImage && <p>{bookData.coverImage.name}</p>}
-            </label>
+              {bookData.coverImage && (
+                <p className="mt-2 text-sm">
+                  Selected: {bookData.coverImage.name}
+                </p>
+              )}
+            </div>
 
-            <label>
-              Preview Link:
+            <div className="md:col-span-2">
+              <label className="block mb-2 font-medium">Preview Link</label>
               <input
                 name="previewLink"
                 value={bookData.previewLink}
                 onChange={handleChange}
-                className="border rounded p-2 w-full"
+                className="border rounded-lg p-3 w-full"
               />
-            </label>
+            </div>
 
-            {/* Keywords */}
-            <label>
-              Keywords:
+            <div className="md:col-span-2">
+              <label className="block mb-2 font-medium">Keywords</label>
               <input
                 name="keywords"
                 value={bookData.keywords.join(", ")}
@@ -514,37 +543,32 @@ export default function AddBookForm({ mode = "add" }) {
                     keywords: e.target.value.split(",").map((k) => k.trim()),
                   })
                 }
-                placeholder="Comma separated"
-                className="border rounded p-2 w-full"
+                placeholder="Comma separated keywords"
+                className="border rounded-lg p-3 w-full"
               />
-            </label>
+            </div>
 
-            {/* Audience */}
-            <label>
-              Audience:
-              <select
-                name="audience"
-                value={bookData.audience}
-                onChange={handleChange}
-                className="border rounded p-2 w-full"
+            <div className="md:col-span-2 mt-6">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="h-12 px-6 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <option value="">Select Audience</option>
-                <option>General</option>
-                <option>Kids</option>
-                <option>Teens</option>
-                <option>Adults</option>
-              </select>
-            </label>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="h-11 px-5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting 
-                ? (mode === "edit" ? "Updating..." : "Adding...") 
-                : (mode === "edit" ? "Update Book" : "Add Book")}
-            </button>
+                {isSubmitting 
+                  ? (mode === "edit" ? "Updating..." : "Adding...") 
+                  : (mode === "edit" ? "Update Book" : "Add Book")}
+              </button>
+              
+              {mode === "edit" && (
+                <button
+                  type="button"
+                  onClick={() => navigate("/dashboard")}
+                  className="h-12 px-6 rounded-xl bg-gray-300 text-gray-700 font-semibold hover:bg-gray-400 ml-4"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
           </div>
         </form>
       </div>
