@@ -12,12 +12,6 @@ const cookieParser = require("cookie-parser");
 // Load environment variables first
 dotenv.config();
 
-// Check for required environment variables
-if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
-  console.error("❌ FATAL ERROR: JWT_SECRET or JWT_REFRESH_SECRET is not defined");
-  process.exit(1);
-}
-
 // Get the current directory path
 const currentDir = path.resolve();
 
@@ -48,18 +42,26 @@ const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ MongoDB connected successfully");
-
-    app.listen(process.env.PORT, () => {
-      console.log(`🚀 Server is running on port ${process.env.PORT}`);
-    });
   } catch (err) {
     console.error("❌ MongoDB connection failed:", err);
     process.exit(1);
   }
 };
 
-// Connect to database
-connectDB();
+function startServer() {
+  // Check for required environment variables
+  if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
+    console.error("❌ FATAL ERROR: JWT_SECRET or JWT_REFRESH_SECRET is not defined");
+    process.exit(1);
+  }
+
+  // Connect to database then start server
+  connectDB().then(() => {
+    app.listen(process.env.PORT, () => {
+      console.log(`🚀 Server is running on port ${process.env.PORT}`);
+    });
+  });
+}
 
 // Routes
 app.use("/api/auth", userRouter);
@@ -74,3 +76,10 @@ app.get("/", (req, res) => {
 
 // Error handler (must be last middleware)
 app.use(errorHandler);
+
+// Only start server when run directly
+if (require.main === module) {
+  startServer();
+}
+
+module.exports = { app, startServer, connectDB };

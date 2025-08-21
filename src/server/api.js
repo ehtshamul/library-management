@@ -9,7 +9,7 @@ export const Api = axios.create({
 
 // Books API instance
 export const getBooks = axios.create({
-  baseURL: "http://localhost:7000/api/auth", // Changed from /api/web to /api/auth
+  baseURL: "http://localhost:7000/api/web",
   withCredentials: true,
 });
 

@@ -1,8 +1,7 @@
 // AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import jwt_decode from "jwt-decode";
-import { Dashboard } from "./server/auth";
+import { Dashboard, login as apiLogin, logout as apiLogout } from "./auth";
 
 const AuthContext = createContext();
 
@@ -43,7 +42,7 @@ export function AuthProvider({ children }) {
 
   const login = async (loginData) => {
     try {
-      const response = await login(loginData);
+      const response = await apiLogin(loginData);
       const { accessToken, user: userData } = response.data;
       
       if (accessToken && userData) {
@@ -75,7 +74,7 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      await logout();
+      await apiLogout();
     } catch (error) {
       console.error("Logout error:", error);
     } finally {

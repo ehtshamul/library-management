@@ -10,15 +10,15 @@ export const logout = () => Api.post("/logout");
 
 // ================== BOOKS APIs ==================
 export const AddBook = (bookdata) =>
-  getBooks.post("/books", bookdata, {
+  Api.post("/", bookdata, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 
 export const updateBook = (id, bookdata) =>
-  getBooks.put(`/books/${id}`, bookdata, {
+  Api.put(`/${id}`, bookdata, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 
-export const getAllBooks = () => getBooks.get("/books");
-export const getLatestBook = () => getBooks.get("/books/latest");
-export const getBookById = (id) => getBooks.get(`/books/${id}`);
+export const getAllBooks = () => getBooks.get("/getbooks");
+export const getLatestBook = () => getBooks.get("/getbooklatest");
+export const getBookById = (id) => Api.get(`/${id}`);
