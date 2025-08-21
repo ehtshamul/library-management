@@ -6,7 +6,6 @@ import "react-toastify/dist/ReactToastify.css";
 import Nav from "./Nav";
 import Footer from "./Footer";
 import axios from "axios";
-import { signup } from "../server/auth"; // Adjust the import path as needed
 
 function SignupPage() {
   const [formdata, setFormdata] = useState({

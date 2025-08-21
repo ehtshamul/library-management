@@ -5,9 +5,7 @@ import Nav from "./Nav";
 import Footer from "./Footer";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
 import {login} from "../server/auth";
-import { set } from "react-hook-form";
 
 
 function LoginPage() {
