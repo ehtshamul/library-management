@@ -1,106 +1,153 @@
-const User = require("../../models/admin/User");
-const jwt = require("jsonwebtoken");
+const { User, RefreshToken } = require("../../models/admin/User");
+const crypto = require("crypto");
+const {
+  signAccess,
+  signRefresh,
+  verifyAccess,
+  verifyRefresh,
+  hash,
+  compare
+} = require("../../utils/Token");
 
-// Signup
+// Cookie options
+const cookieOpts = {
+  httpOnly: true,
+  sameSite: "lax",
+  secure: process.env.NODE_ENV === "production",
+  path: "/api/auth/refresh",
+  maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+  domain: process.env.COOKIE_DOMAIN || undefined
+};
+
+// Helper to get client info
+function extractClient(req) {
+  return {
+    userAgent: req.headers["user-agent"],
+    ip: req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket?.remoteAddress
+  };
+}
+
+// ------------------ SIGNUP ------------------
 const signup = async (req, res) => {
   const { name, email, password, confirmPassword, role } = req.body;
   try {
-    if (!name || !email || !password || !confirmPassword || !role) {
-      return res.status(400).json({
-        success: false,
-        message: "Please fill all the fields",
-      });
-    }
+    if (!name || !email || !password || !confirmPassword || !role)
+      return res.status(400).json({ success: false, message: "Please fill all fields" });
 
-    if (password !== confirmPassword) {
-      return res.status(400).json({
-        success: false,
-        message: "Passwords do not match",
-      });
-    }
+    if (password !== confirmPassword)
+      return res.status(400).json({ success: false, message: "Passwords do not match" });
 
     const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "User already exists",
-      });
-    }
+    if (existingUser)
+      return res.status(400).json({ success: false, message: "User already exists" });
 
-    const user = await User.create({
-      name,
-      email,
-      password, // Will be hashed in pre("save")
-      role,
-    });
+    const user = await User.create({ name, email, password, role });
 
     res.status(201).json({
       success: true,
       message: "User created successfully",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
+      user: { id: user._id, name: user.name, email: user.email, role: user.role }
     });
   } catch (error) {
     console.error("Error creating user:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
-// Login
+// ------------------ LOGIN ------------------
 const login = async (req, res) => {
   const { email, password } = req.body;
   try {
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Please enter email and password",
-      });
-    }
+    if (!email || !password)
+      return res.status(400).json({ success: false, message: "Please enter email and password" });
 
     const user = await User.findOne({ email });
-    if (!user || !(await user.comparePassword(password))) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid email or password",
-      });
-    }
+    if (!user || !(await user.comparePassword(password)))
+      return res.status(401).json({ success: false, message: "Invalid email or password" });
 
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
+    const tokenId = crypto.randomUUID();
+    const accessToken = signAccess(user);
+    const refreshToken = signRefresh(user, tokenId);
+
+    // Store hashed refresh token in DB
+    const { userAgent, ip } = extractClient(req);
+    await RefreshToken.create({
+      hash: await hash(refreshToken),
+      userId: user._id,
+      userAgent,
+      ipAddress: ip
     });
 
-    res.status(200).json({
+    // Send refresh token as httpOnly cookie
+    res.cookie("rt", refreshToken, cookieOpts);
+
+    return res.status(200).json({
       success: true,
       message: "Login successful",
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    });
-    console.log("User logged in:", {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
+      accessToken,
+      user: { id: user._id, name: user.name, email: user.email, role: user.role }
     });
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
+// ------------------ REFRESH TOKEN ------------------
+const refresh = async (req, res) => {
+  try {
+    const token = req.cookies?.rt;
+    if (!token) return res.status(401).json({ message: "No refresh token" });
 
-module.exports = { signup, login };
+    const payload = verifyRefresh(token);
+    const user = await User.findById(payload.sub);
+    if (!user) return res.status(401).json({ message: "User not found" });
+
+    const storedToken = await RefreshToken.findOne({ userId: user._id });
+    if (!storedToken || !(await compare(token, storedToken.hash))) {
+      await RefreshToken.deleteMany({ userId: user._id }); // invalidate all
+      return res.status(401).json({ message: "Refresh token invalidated" });
+    }
+
+    // Rotate token
+    await RefreshToken.deleteOne({ _id: storedToken._id });
+
+    const tokenId = crypto.randomUUID();
+    const newAccessToken = signAccess(user);
+    const newRefreshToken = signRefresh(user, tokenId);
+
+    const { userAgent, ip } = extractClient(req);
+    await RefreshToken.create({
+      hash: await hash(newRefreshToken),
+      userId: user._id,
+      userAgent,
+      ipAddress: ip
+    });
+
+    res.cookie("rt", newRefreshToken, cookieOpts);
+    return res.json({ accessToken: newAccessToken });
+  } catch {
+    return res.status(401).json({ message: "Invalid/expired refresh token" });
+  }
+};
+
+// ------------------ LOGOUT ------------------
+const logout = async (req, res) => {
+  try {
+    const token = req.cookies?.rt;
+    res.clearCookie("rt", { ...cookieOpts, maxAge: 0 });
+
+    if (token) {
+      try {
+        const payload = verifyRefresh(token);
+        await RefreshToken.deleteMany({ userId: payload.sub, hash: await hash(token) });
+      } catch { /* ignore errors */ }
+    }
+
+    return res.json({ message: "Logged out successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: "Logout error", error: error.message });
+  }
+};
+
+module.exports = { signup, login, refresh, logout };

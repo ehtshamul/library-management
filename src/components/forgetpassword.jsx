@@ -1,13 +1,9 @@
 import React from "react";
-import Nav from "./Nav";
-import Footer from "./Footer";
 import {  useNavigate } from "react-router-dom";
 
 const ForgotPassword = () => {
     let navigate = useNavigate();
   return (
-    <>
-    <Nav />
     <div
       className="relative flex size-full  flex-col bg-slate-50 overflow-x-hidden"
       style={{ fontFamily: '"Plus Jakarta Sans", "Noto Sans", sans-serif' }}
@@ -61,8 +57,6 @@ const ForgotPassword = () => {
         </div>
       </div>
     </div>
-    <Footer />
-    </>
   );
 };
 

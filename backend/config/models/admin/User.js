@@ -1,6 +1,17 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const bcrypt = require("bcryptjs");
+// User schema definition
+
+const refreshToken= new Schema({
+  hash:{type:String,required:true},
+  userId:{type:Schema.Types.ObjectId,ref:"User",required:true},
+  createdAt:{type:Date,default:Date.now,expires:"7d"},
+  userAgent:{type:String,required:true},
+  ipAddress:{type:String,required:true},
+
+},{_id:true});
+
 
 const userSchema = new Schema({
   name: {
@@ -41,5 +52,8 @@ userSchema.pre("save", async function (next) {
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
+const User = mongoose.model("User", userSchema);
+const RefreshToken = mongoose.model("RefreshToken", refreshToken);
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = { User, RefreshToken };
+

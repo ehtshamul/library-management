@@ -3,10 +3,8 @@ import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Nav from "./Nav";
-import Footer from "./Footer";
-import axios from "axios";
-import { signup } from "../server/auth"; // Adjust the import path as needed
+import { signupUser } from "../store/authSlice";
+import { useDispatch } from "react-redux";
 
 function SignupPage() {
   const [formdata, setFormdata] = useState({
@@ -17,6 +15,7 @@ function SignupPage() {
     role: "",
   });
   let navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
@@ -97,38 +96,19 @@ function SignupPage() {
       return;
     }
 
-    // 2. Call API
-    try {
-      const response = await axios.post(
-        "http://localhost:7000/api/auth/signup",
-        formdata
-      );
+    // 2. Call Redux action
+    dispatch(signupUser({ formData: formdata, navigate, toast }));
 
-      if (response.status === 201) {
-        toast.success("Signup successful!");
-        setTimeout(() => {
-          navigate("/login");
-        }, 3000);
-
-        // reset form
-        setFormdata({
-          name: "",
-          email: "",
-          password: "",
-          confirmPassword: "",
-          role: "",
-        });
-        setErrors({});
-        setStrongPassword(0);
-      } else {
-        toast.error("Signup failed! Please try again.");
-      }
-    } catch (error) {
-      console.error("Signup error:", error.response?.data || error.message);
-      toast.error(
-        error.response?.data?.message || "Signup failed! Please try again."
-      );
-    }
+    // reset form
+    setFormdata({
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      role: "",
+    });
+    setErrors({});
+    setStrongPassword(0);
   };
 
   // ✅ Password strength label
@@ -136,112 +116,108 @@ function SignupPage() {
   const strengthColor = ["red", "orange", "yellow", "blue", "green"];
 
   return (
-    <>
-      <Nav />
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <ToastContainer position="top-right" autoClose={2000} />
-        <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-lg">
-          <h2 className="text-2xl font-bold text-center mb-6">
-            Create Account
-          </h2>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <ToastContainer position="top-right" autoClose={2000} />
+      <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-lg">
+        <h2 className="text-2xl font-bold text-center mb-6">
+          Create Account
+        </h2>
 
-          <form className="space-y-5" onSubmit={handleSubmit}>
-            {/* Full Name */}
-            <InputField
-              label="Full Name"
-              type="text"
-              name="name"
-              value={formdata.name}
+        <form className="space-y-5" onSubmit={handleSubmit}>
+          {/* Full Name */}
+          <InputField
+            label="Full Name"
+            type="text"
+            name="name"
+            value={formdata.name}
+            onChange={onchange}
+            error={errors.name}
+          />
+
+          {/* Email */}
+          <InputField
+            label="Email"
+            type="email"
+            name="email"
+            value={formdata.email}
+            onChange={onchange}
+            error={errors.email}
+          />
+
+          {/* Password */}
+          <PasswordField
+            label="Password"
+            name="password"
+            value={formdata.password}
+            onChange={onchange}
+            show={showPassword}
+            setShow={setShowPassword}
+            error={errors.password}
+          />
+
+          {/* Password Strength */}
+          {formdata.password && strongPassword > 0 && (
+            <p
+              className={`text-xs mt-1 font-semibold text-${
+                strengthColor[strongPassword - 1]
+              }-500`}
+            >
+              Strength: {strengthLabel[strongPassword - 1]}
+            </p>
+          )}
+
+          {/* Confirm Password */}
+          <PasswordField
+            label="Confirm Password"
+            name="confirmPassword"
+            value={formdata.confirmPassword}
+            onChange={onchange}
+            show={showConfirmPassword}
+            setShow={setShowConfirmPassword}
+            error={errors.confirmPassword}
+          />
+
+          {/* Role Selection */}
+          <div>
+            <label className="block mb-1 text-sm font-medium">
+              Select Role
+            </label>
+            <select
+              name="role"
+              value={formdata.role}
               onChange={onchange}
-              error={errors.name}
-            />
-
-            {/* Email */}
-            <InputField
-              label="Email"
-              type="email"
-              name="email"
-              value={formdata.email}
-              onChange={onchange}
-              error={errors.email}
-            />
-
-            {/* Password */}
-            <PasswordField
-              label="Password"
-              name="password"
-              value={formdata.password}
-              onChange={onchange}
-              show={showPassword}
-              setShow={setShowPassword}
-              error={errors.password}
-            />
-
-            {/* Password Strength */}
-            {formdata.password && strongPassword > 0 && (
-              <p
-                className={`text-xs mt-1 font-semibold text-${
-                  strengthColor[strongPassword - 1]
-                }-500`}
-              >
-                Strength: {strengthLabel[strongPassword - 1]}
-              </p>
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            >
+              <option value="">-- Select Role --</option>
+              <option value="User">User</option>
+              <option value="Admin">Admin</option>
+              
+            </select>
+            {errors.role && (
+              <p className="text-red-500 text-xs mt-1">{errors.role}</p>
             )}
+          </div>
 
-            {/* Confirm Password */}
-            <PasswordField
-              label="Confirm Password"
-              name="confirmPassword"
-              value={formdata.confirmPassword}
-              onChange={onchange}
-              show={showConfirmPassword}
-              setShow={setShowConfirmPassword}
-              error={errors.confirmPassword}
-            />
+          {/* Submit Button */}
+          <button
+            type="submit"
+            className="w-full py-2 font-semibold text-white bg-indigo-500 rounded-lg hover:bg-indigo-600 transition"
+          >
+            Sign Up
+          </button>
+        </form>
 
-            {/* Role Selection */}
-            <div>
-              <label className="block mb-1 text-sm font-medium">
-                Select Role
-              </label>
-              <select
-                name="role"
-                value={formdata.role}
-                onChange={onchange}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              >
-                <option value="">-- Select Role --</option>
-                <option value="User">User</option>
-                <option value="Admin">Admin</option>
-                <option value="Admin">librarian</option>
-              </select>
-              {errors.role && (
-                <p className="text-red-500 text-xs mt-1">{errors.role}</p>
-              )}
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              className="w-full py-2 font-semibold text-white bg-indigo-500 rounded-lg hover:bg-indigo-600 transition"
-            >
-              Sign Up
-            </button>
-          </form>
-
-          <p className="text-sm text-center text-gray-600 mt-6">
-            Already have an account?{" "}
-            <span
-              className="text-indigo-500 hover:underline cursor-pointer"
-              onClick={() => navigate("/login")}
-            >
-              Login
-            </span>
-          </p>
-        </div>
+        <p className="text-sm text-center text-gray-600 mt-6">
+          Already have an account?{" "}
+          <span
+            className="text-indigo-500 hover:underline cursor-pointer"
+            onClick={() => navigate("/login")}
+          >
+            Login
+          </span>
+        </p>
       </div>
-      <Footer />
-    </>
+    </div>
   );
 }
 

@@ -5,11 +5,42 @@ const Jwt = require("jsonwebtoken");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const userrouter= require("./config/routes/admin/User");
+const path = require('path');
+const fs = require('fs');
+const cookieParser = require("cookie-parser");
+
+
+app.use(cookieParser());
+
+
+// Import routes
+const userRouter = require("./config/routes/admin/User");
+const dashboardRouter = require("./config/routes/admin/Dashboard");
+const booksRouter = require("./config/routes/admin/books");
+const getBooksRouter = require("./config/routes/web/getbooks");
 
 dotenv.config();
-app.use(cors());
-app.use(bodyParser.json()); // so you can read req.body
+
+// Get the current directory path
+const currentDir = path.resolve();
+
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(currentDir, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Serve static files
+app.use('/uploads', express.static(uploadsDir));
+
+// Middleware
+app.use(cors(
+  {
+    origin: process.env.FRONTEND_URL,
+    credentials: true, // Allow cookies to be sent
+  }
+));
+app.use(bodyParser.json());
 
 const connectDB = async () => {
   try {
@@ -21,18 +52,20 @@ const connectDB = async () => {
     });
   } catch (err) {
     console.error("❌ MongoDB connection failed:", err);
-    process.exit(1); // Exit the process with failure
+    process.exit(1);
   }
 };
 
-// call the function
+// Connect to database
 connectDB();
-//
-// Routers 
-app.use("/api/auth",userrouter);
-app.use("/api/auth",userrouter);
 
-// simple test route
+// Routes
+app.use("/api/auth", userRouter);
+app.use("/api/auth", dashboardRouter);
+app.use("/api/auth", booksRouter);
+app.use("/api/web", getBooksRouter);
+
+// Simple test route
 app.get("/", (req, res) => {
   res.send("Backend working fine ✅");
 });

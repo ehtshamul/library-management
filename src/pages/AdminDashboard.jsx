@@ -1,11 +1,62 @@
 import React from "react";
 import AddBookForm from "./Addbook";
 import { useState } from "react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchDashboard } from "../store/authSlice";
+import { getAllBooks } from "../store/booksSlice";
+import { useNavigate } from "react-router-dom";
+
 const AdminDashboard = () => {
-let [showAddbook, setShowAddbook]=useState(false);
-const toggleAddBook = () => {
+  let [showAddbook, setShowAddbook] = useState(false);
+  let [adminData, setAdminData] = useState(null);
+  let [books, setBooks] = useState([]);
+  let [latestBook, setLatestBook] = useState();
+
+  const toggleAddBook = () => {
     setShowAddbook(!showAddbook);
   };
+
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { user, accessToken } = useSelector((state) => state.auth);
+
+  const handleEdit = (bookId) => {
+    navigate(`/book/${bookId}/edit`);
+    console.log(`/book/${bookId}/edit`);
+  };
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        if (!accessToken) {
+          navigate("/login");
+          return;
+        }
+
+        // 1. Fetch admin/user data
+        const dashboardResult = await dispatch(fetchDashboard());
+        if (dashboardResult.payload) {
+          setAdminData(dashboardResult.payload.user);
+        }
+
+        // 2. Fetch all books
+        const booksResult = await dispatch(getAllBooks());
+        if (booksResult.payload) {
+          setBooks(booksResult.payload);
+        }
+
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+          localStorage.removeItem("accessToken");
+          navigate("/login");
+        }
+      }
+    };
+
+    fetchDashboardData();
+  }, [dispatch, navigate, accessToken]);
 
   return (
     <div
@@ -18,7 +69,8 @@ const toggleAddBook = () => {
           <div className="layout-content-container flex flex-col max-w-[960px] flex-1">
             <div className="flex flex-wrap justify-between gap-3 p-4">
               <p className="text-[#0d141c] tracking-light text-[32px] font-bold leading-tight min-w-72">
-                Welcome back, Sarah {/* ✅ API: Replace with logged-in admin name */}
+                goood
+                {adminData && <span>Welcome back {adminData.name}</span>}
               </p>
             </div>
 
@@ -40,14 +92,13 @@ const toggleAddBook = () => {
             {/* Overview Section */}
             <h2 className="text-[#0d141c] text-[22px] font-bold px-4 pb-3 pt-5">Overview</h2>
             <div className="flex flex-wrap gap-4 p-4">
-              {/* ✅ API: Replace numbers with backend counts */}
               <div className="flex flex-1 flex-col gap-2 rounded-lg p-6 border border-[#cedbe8]">
                 <p className="text-base font-medium">Total Users</p>
                 <p className="text-2xl font-bold">1,250</p>
               </div>
               <div className="flex flex-1 flex-col gap-2 rounded-lg p-6 border border-[#cedbe8]">
                 <p className="text-base font-medium">Total Books</p>
-                <p className="text-2xl font-bold">3,500</p>
+                <p className="text-2xl font-bold">  {books.length} </p>
               </div>
               <div className="flex flex-1 flex-col gap-2 rounded-lg p-6 border border-[#cedbe8]">
                 <p className="text-base font-medium">Borrowed Books</p>
@@ -71,7 +122,6 @@ const toggleAddBook = () => {
                   <p className="text-[#078838] text-base font-medium">+15%</p>
                 </div>
                 <div className="flex min-h-[180px] flex-1 flex-col gap-8 py-4">
-                  {/* ✅ Placeholder chart until API integration */}
                   <svg width="100%" height="148" viewBox="0 0 478 150">
                     <rect width="100%" height="100%" fill="#e7edf4" />
                     <text
@@ -96,7 +146,6 @@ const toggleAddBook = () => {
                   <p className="text-[#078838] text-base font-medium">+5%</p>
                 </div>
                 <div className="grid min-h-[180px] grid-flow-col gap-6 grid-rows-[1fr_auto] items-end justify-items-center px-3">
-                  {/* ✅ API: Replace heights with dynamic category counts */}
                   <div className="border-t-2 border-[#49739c] bg-[#e7edf4] w-full" style={{ height: '90%' }}></div>
                   <p className="text-[13px] font-bold text-[#49739c]">Fiction</p>
                   <div className="border-t-2 border-[#49739c] bg-[#e7edf4] w-full" style={{ height: '40%' }}></div>
@@ -119,7 +168,6 @@ const toggleAddBook = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {/* ✅ API: Map through latest reviews from DB */}
                     <tr className="border-t border-[#cedbe8]">
                       <td className="px-4 py-2">Emily Carter</td>
                       <td className="px-4 py-2">The Secret Garden</td>
@@ -137,21 +185,42 @@ const toggleAddBook = () => {
 
             {/* Recently Added Books */}
             <h2 className="text-[22px] font-bold px-4 pb-3 pt-5">Recently Added Books</h2>
-            <div className="flex overflow-y-auto">
-              <div className="flex items-stretch p-4 gap-3">
-                {/* ✅ API: Map through recently added books */}
-                <div className="flex flex-col gap-4 min-w-40">
-                  <div
-                    className="w-full bg-center bg-cover aspect-[3/4] rounded-lg"
-                    style={{ backgroundImage: `url('https://placehold.co/150x200')` }}
-                  ></div>
-                  <div>
-                    <p className="text-base font-medium">The Silent Observer</p>
-                    <p className="text-sm text-[#49739c]">by Amelia Hayes</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            
+           {books && books.length > 0 ? (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+    {books.map((book) => (
+      <div
+        key={book._id}
+        className="flex flex-col gap-4 bg-white shadow-md rounded-lg p-4 hover:shadow-lg transition"
+      >
+        {/* Book Cover */}
+        <div className="w-full bg-center bg-cover aspect-[3/4] rounded-lg overflow-hidden">
+          <img
+            src={`http://localhost:7000/${book.coverImage}`}
+            alt={book.title}
+            className="w-full h-full object-cover rounded-lg"
+          />
+        </div>
+
+        {/* Book Details */}
+        <div className="flex flex-col flex-grow">
+          <p className="text-lg font-semibold">{book.title}</p>
+          <p className="text-sm text-gray-600 mb-3">by {book.author}</p>
+
+          {/* Edit Button */}
+          <button
+            onClick={() => handleEdit(book._id)}
+            className="mt-auto bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          >
+            Edit
+          </button>
+        </div>
+      </div>
+    ))}
+  </div>
+) : (
+  <p className="text-center text-gray-500">No books available</p>
+)}
 
           </div>
         </div>
