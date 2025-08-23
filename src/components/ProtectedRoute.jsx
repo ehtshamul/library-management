@@ -11,7 +11,7 @@ const ProtectedRoute = ({ children }) => {
   }
   
   // Check if user is admin for admin routes
-  if (window.location.pathname.includes('/admin') && user.role !== 'admin') {
+  if (window.location.pathname.includes('/admin') && (user.role || '').toLowerCase() !== 'admin') {
     // Redirect to home if not admin
     return <Navigate to="/" replace />;
   }

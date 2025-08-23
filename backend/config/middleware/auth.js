@@ -15,6 +15,9 @@ function auth(requiredRoles = []) {
       }
 
       const payload = verifyAccess(token);
+      if (!payload) {
+        return res.status(401).json({ message: "Token is not valid" });
+      }
       req.user = { id: payload.sub, role: payload.role || "User" };
 
       // role check
