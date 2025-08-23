@@ -85,7 +85,10 @@ const booksSlice = createSlice({
       })
       .addCase(addBook.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.books.push(action.payload);
+        const created = action.payload?.book || action.payload;
+        if (created) {
+          state.books.push(created);
+        }
       })
       .addCase(addBook.rejected, (state, action) => {
         state.status = "failed";
@@ -97,8 +100,13 @@ const booksSlice = createSlice({
       })
       .addCase(updateBook.fulfilled, (state, action) => {
         state.status = "succeeded";
-        const index = state.books.findIndex(b => b._id === action.payload._id);
-        if (index !== -1) state.books[index] = action.payload;
+        const updated = action.payload?.book || action.payload;
+        if (updated) {
+          const index = state.books.findIndex(b => (b._id || b.id) === (updated._id || updated.id));
+          if (index !== -1) {
+            state.books[index] = updated;
+          }
+        }
       })
       .addCase(updateBook.rejected, (state, action) => {
         state.status = "failed";

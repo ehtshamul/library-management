@@ -14,11 +14,10 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
-    const { title, author } = req.body;
-    const safeTitle = title.replace(/\s+/g, "_");
-    const safeAuthor = author.replace(/\s+/g, "_");
-    const ext = path.extname(file.originalname);
-    cb(null, `${safeTitle}-${safeAuthor}${ext}`);
+    const { title = "book", author = "unknown" } = req.body;
+    const safe = (str) => String(str).toLowerCase().replace(/[^a-z0-9-_]+/g, "_").slice(0, 50);
+    const ext = path.extname(file.originalname) || ".jpg";
+    cb(null, `${safe(title)}-${safe(author)}-${Date.now()}${ext}`);
   },
 });
 

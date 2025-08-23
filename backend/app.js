@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const bodyParser = require("body-parser");
+// Use Express built-in body parsers
 const Jwt = require("jsonwebtoken");
 const cors = require("cors");
 const mongoose = require("mongoose");
@@ -40,15 +40,17 @@ app.use(cors(
     credentials: true, // Allow cookies to be sent
   }
 ));
-app.use(bodyParser.json());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ MongoDB connected successfully");
 
-    app.listen(process.env.PORT, () => {
-      console.log(`🚀 Server is running on port ${process.env.PORT}`);
+    const PORT = process.env.PORT || 7000;
+    app.listen(PORT, () => {
+      console.log(`🚀 Server is running on port ${PORT}`);
     });
   } catch (err) {
     console.error("❌ MongoDB connection failed:", err);

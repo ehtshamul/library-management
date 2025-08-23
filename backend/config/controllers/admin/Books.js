@@ -2,12 +2,26 @@
 const Books = require("../../models/admin/Addbook");
 
 // book controllers
-// Helper function to ensure a field is always an array
+// Helper to coerce input into an array
 const parseArrayField = (field) => {
   if (!field) return [];
-  return Array.isArray(field)
-    ? field
-    : field.split(",").map(item => item.trim());
+  if (Array.isArray(field)) return field;
+  if (typeof field === "string") {
+    const trimmed = field.trim();
+    if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        // fall through to comma-split
+      }
+    }
+    return trimmed
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+  return [];
 };
 
 const books = async (req, res) => {
@@ -87,11 +101,7 @@ const books = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Book added successfully",
-      book: {
-        id: book._id,
-        title: book.title,
-        bookId: book.isbn,
-      }
+      book
     });
 
   } catch (error) {

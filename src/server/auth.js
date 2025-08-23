@@ -21,4 +21,4 @@ export const updateBook = (id, bookdata) =>
 
 export const getAllBooks = () => getBooks.get("/getbooks");
 export const getLatestBook = () => getBooks.get("/getbooklatest");
-export const getBookById = (id) => getBooks.get(`/books/${id}`);
+export const getBookById = (id) => Api.get(`/${id}`);

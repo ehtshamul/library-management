@@ -16,8 +16,8 @@ const getBooks = async (req, res) => {
 // Fetch latest book
 const getbooklatest = async (req, res) => {
   try {
-    const latestBook = await Books.findOne().sort({ createdAt: -1 }).limit(5);
-    res.json(latestBook);
+    const latestBooks = await Books.find().sort({ createdAt: -1 }).limit(5);
+    res.json(latestBooks);
   } catch (error) {
     console.error("Error fetching latest book:", error);
     res.status(500).json({ error: error.message });
