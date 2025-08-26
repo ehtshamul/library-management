@@ -21,8 +21,8 @@ const AdminDashboard = () => {
   };
 
   const handleEdit = (bookId) => {
-    navigate(`/book/${bookId}/edit`);
-    console.log(`/book/${bookId}/edit`);
+    navigate(`/admin/book/${bookId}/edit`);
+    console.log(`/admin/book/${bookId}/edit`);
   };
 
   useEffect(() => {

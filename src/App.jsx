@@ -10,6 +10,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AddBookForm from "./pages/Addbook";
 import ProtectedRoute from "./components/ProtectedRoute";
 import BookGrid from "./pages/Bookesview";
+import AdminReviews from "./pages/AdminReviews";
 
 function App() {
   return (
@@ -27,8 +28,21 @@ function App() {
           </ProtectedRoute>
           } />
           <Route path="/browse" element={<BookGrid />} />
-        <Route path="/book/:id/edit" element={<AddBookForm mode='edit' />} />
-        <Route path="/book/create" element={<AddBookForm mode='create' />} />
+        <Route path="/book/:id/edit" element={
+          <ProtectedRoute>
+            <AddBookForm mode='edit' />
+          </ProtectedRoute>
+        } />
+        <Route path="/book/create" element={
+          <ProtectedRoute>
+            <AddBookForm mode='create' />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/reviews" element={
+          <ProtectedRoute>
+            <AdminReviews />
+          </ProtectedRoute>
+        } />
 
         {/* ...other routes */}
       </Routes>

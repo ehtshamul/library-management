@@ -5,10 +5,6 @@ const {auth} = require('../../middleware/auth'); // Import your auth middleware
 
 router.get("/dashboard", auth([ "Admin", "admin" ]), (req, res) => { // Apply auth middleware
   try {
-    if (!req.user || req.user.role !== "Admin") {
-      return res.status(403).json({ message: "Access denied" });
-    }
-
     res.status(200).json({
       message: "Welcome to the Admin Dashboard",
       user: {

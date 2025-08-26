@@ -26,8 +26,8 @@ export default function Nav() {
 
         {role === "admin" && (
           <>
-            <Link to="/browse">BookReview</Link>
             <Link to="/admin-dashboard">Admin dashboard</Link>
+            <Link to="/admin/reviews">Admin Reviews</Link>
           </>
         )}
 
@@ -50,10 +50,12 @@ export default function Nav() {
           <summary className="cursor-pointer px-3 py-2 bg-gray-200 rounded">Menu</summary>
           <div className="">
             <Link to="/browse" className="block py-1">Browse</Link>
-            {role === "admin" && <Link to="/bookreview" className="block py-1">BookReview</Link>&&
-            role === "admin" && <Link to="/admin-dashboard" className="block py-1">Admin dasboard</Link>
-            
-            }
+            {role === "admin" && (
+              <>
+                <Link to="/admin-dashboard" className="block py-1">Admin dashboard</Link>
+                <Link to="/admin/reviews" className="block py-1">Admin Reviews</Link>
+              </>
+            )}
             {role === "user" && <Link to="/my-books" className="block py-1">My Books</Link>}
             {!user && <Link to="/signup" className="block py-1">Signup</Link>}
             {user ? (

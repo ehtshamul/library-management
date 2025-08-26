@@ -8,23 +8,25 @@ export default function BookGrid() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const Books = useSelector((state) => state.books.books); // use redux store
-  const [selectedBookId, setSelectedBookId] = useState(null);
+  const { user } = useSelector((state) => state.auth);
+  const isAdmin = (user?.role || "").toLowerCase() === "admin";
+  const [selectedBook, setSelectedBook] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
 
   const handleEdit = (bookId) => {
-    navigate(`/add-book/${bookId}`); // route: add-book (edit mode handled by component)
+    navigate(`/book/${bookId}/edit`); // route: /book/:id/edit
   };
 
   const handleDelete = (book) => {
-    setSelectedBookId(book._id); // use _id
+    setSelectedBook(book);
     setShowConfirm(true);
   };
 
   const confirmDelete = async () => {
-    if (!selectedBookId) return;
-    await dispatch(deleteBook(selectedBookId)).unwrap();
+    if (!selectedBook?._id) return;
+    await dispatch(deleteBook(selectedBook._id)).unwrap();
     setShowConfirm(false);
-    setSelectedBookId(null);
+    setSelectedBook(null);
   };
 
   useEffect(() => {
@@ -71,20 +73,22 @@ export default function BookGrid() {
                 </div>
 
                 {/* Action buttons */}
-                <div className="mt-4 flex gap-3">
-                  <button
-                    onClick={() => handleEdit(book._id)}
-                    className="flex-1 px-3 py-1 text-sm rounded-md bg-blue-500 text-white hover:bg-blue-600 transition"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(book)}
-                    className="flex-1 px-3 py-1 text-sm rounded-md bg-red-500 text-white hover:bg-red-600 transition"
-                  >
-                    Delete
-                  </button>
-                </div>
+                {isAdmin && (
+                  <div className="mt-4 flex gap-3">
+                    <button
+                      onClick={() => handleEdit(book._id)}
+                      className="flex-1 px-3 py-1 text-sm rounded-md bg-blue-500 text-white hover:bg-blue-600 transition"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(book)}
+                      className="flex-1 px-3 py-1 text-sm rounded-md bg-red-500 text-white hover:bg-red-600 transition"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -98,8 +102,8 @@ export default function BookGrid() {
                 Confirm Delete
               </h2>
               <p className="text-slate-600 mb-4">
-                Are you sure you want to delete{" "}
-                <span className="font-semibold">{Books?.title}</span>?
+                Are you sure you want to delete {" "}
+                <span className="font-semibold">{selectedBook?.title}</span>?
               </p>
               <div className="flex justify-end gap-3">
                 <button
