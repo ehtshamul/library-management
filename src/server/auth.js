@@ -1,24 +1,30 @@
 // auth.js
-import { Api, getBooks } from "./api";
+import { api ,getBooks } from "./api";
+
+
+
 
 // Auth APIs
-export const login = (formData) => Api.post("/login", formData);
-export const signup = (formData) => Api.post("/signup", formData);
-export const Dashboard = () => Api.get("/dashboard");
-export const logout = () => Api.post("/logout");
-export const refresh = () => Api.post("/refresh");
+export const login = (formData) => api.post("/login", formData);
+export const signup = (formData) => api.post("/signup", formData);
+export const Dashboard = () => api.get("/dashboard");
+export const logout = () => api.post("/logout");
+export const refresh = () => api.post("/refresh");
 
 // Books APIs
 export const AddBook = (bookdata) =>
-  Api.post("/", bookdata, {
+  api.post("/", bookdata, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 
 export const updateBook = (id, bookdata) =>
-  Api.put(`/${id}`, bookdata, {
+  api.put(`/${id}`, bookdata, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 
 export const getAllBooks = () => getBooks.get("/getbooks");
 export const getLatestBook = () => getBooks.get("/getbooklatest");
-export const getBookById = (id) => Api.get(`/${id}`);
+export const getBookById = (id) => api.get(`/${id}`);
+
+// ✅ Fixed: Use getBooks instead of Api for delete operation
+export const deleteBook = (id) => api.delete(`/deletebook/${id}`);

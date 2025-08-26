@@ -161,6 +161,24 @@ const mongoose = require("mongoose");
     res.status(500).json({ message: err.message });
   }
 };
+// delectboosk
+const delectboosk = async (req,res)=>{
+  const { id } = req.params;
+  console.log("delect book ID:", id);
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid book ID" });
+  }
+
+  try {
+    const book = await Books.findByIdAndDelete(id);
+    if (!book) return res.status(404).json({ message: "Book not found" });
+    res.json({message:"book delect successfully"});
+  } catch (err) {
+    console.error("Error in delect book:", err);
+    res.status(500).json({ message: err.message });
+  }
+}
 
 
-module.exports = {update ,books,Getid};
+module.exports = {update ,books,Getid ,delectboosk};

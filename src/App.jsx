@@ -9,6 +9,7 @@ import Home from "./pages/Home"; // Assuming you have a Home component
 import AdminDashboard from "./pages/AdminDashboard";
 import AddBookForm from "./pages/Addbook";
 import ProtectedRoute from "./components/ProtectedRoute";
+import BookGrid from "./pages/Bookesview";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <AdminDashboard />
           </ProtectedRoute>
           } />
+          <Route path="/browse" element={<BookGrid />} />
         <Route path="/book/:id/edit" element={<AddBookForm mode='edit' />} />
         <Route path="/book/create" element={<AddBookForm mode='create' />} />
 

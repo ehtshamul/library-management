@@ -56,7 +56,7 @@ const TagInput = ({ tags, onTagsChange }) => {
 // Main AddBookForm
 export default function AddBookForm({ mode = "add" }) {
   const { id } = useParams();
-  const navigate = useNavigate();
+  const Navigate = useNavigate();
   const dispatch = useDispatch();
 
   const [bookData, setBookData] = useState({
@@ -197,7 +197,7 @@ export default function AddBookForm({ mode = "add" }) {
         formData.append("coverImage", bookData.coverImage);
       }
 
-      let response;
+     
       if (mode === "edit" && id) {
         // Update existing book using Redux action
         const result = await dispatch(updateBook({ id, bookData: formData }));

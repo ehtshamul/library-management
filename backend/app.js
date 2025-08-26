@@ -34,12 +34,21 @@ if (!fs.existsSync(uploadsDir)) {
 app.use('/uploads', express.static(uploadsDir));
 
 // Middleware
-app.use(cors(
-  {
-    origin: process.env.FRONTEND_URL,
-    credentials: true, // Allow cookies to be sent
-  }
-));
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174"
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

@@ -10,6 +10,11 @@ export const loginUser = createAsyncThunk(
   async ({ formData, navigate, toast }, { rejectWithValue }) => {
     try {
       const response = await api.login(formData);
+
+      // Save user & token to localStorage
+      localStorage.setItem("accessToken", response.data.accessToken);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+
       toast.success("Login successful!");
       navigate("/admin-dashboard");
       return response.data; // expects { user: {...}, accessToken: "..." }
@@ -54,6 +59,11 @@ export const logoutUser = createAsyncThunk(
   async ({ navigate, toast }, { rejectWithValue }) => {
     try {
       const response = await api.logout();
+
+      // Clear localStorage
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("user");
+
       toast.success("Logout successful!");
       navigate("/login");
       return response.data;
@@ -69,7 +79,10 @@ export const refreshToken = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.refresh();
-      return response.data; // expects { token: "..." }
+
+      // Save new token
+      localStorage.setItem("accessToken", response.data.accessToken);
+      return response.data; // expects { accessToken: "..." }
     } catch (error) {
       return rejectWithValue(error.response?.data || { message: error.message });
     }
@@ -80,7 +93,7 @@ export const refreshToken = createAsyncThunk(
 const authSlice = createSlice({
   name: "auth",
   initialState: {
-    user: null,
+    user: JSON.parse(localStorage.getItem("user")) || null,
     accessToken: localStorage.getItem("accessToken") || null,
     status: "idle",
     error: null,
@@ -93,7 +106,6 @@ const authSlice = createSlice({
         state.status = "succeeded";
         state.user = action.payload.user;
         state.accessToken = action.payload.accessToken;
-        localStorage.setItem("accessToken", action.payload.accessToken);
       })
       // Signup
       .addCase(signupUser.fulfilled, (state) => {
@@ -103,19 +115,20 @@ const authSlice = createSlice({
       .addCase(fetchDashboard.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.user = action.payload.user;
+
+        // keep user in localStorage updated
+        localStorage.setItem("user", JSON.stringify(action.payload.user));
       })
       // Logout
       .addCase(logoutUser.fulfilled, (state) => {
         state.status = "succeeded";
         state.user = null;
         state.accessToken = null;
-        localStorage.removeItem("accessToken");
       })
       // Refresh Token
       .addCase(refreshToken.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.accessToken = action.payload.accessToken;
-        localStorage.setItem("accessToken", action.payload.accessToken);
       })
 
       // Common Pending Handler
@@ -138,6 +151,7 @@ const authSlice = createSlice({
             state.user = null;
             state.accessToken = null;
             localStorage.removeItem("accessToken");
+            localStorage.removeItem("user");
           }
         }
       );

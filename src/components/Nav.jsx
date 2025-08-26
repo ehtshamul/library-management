@@ -21,32 +21,39 @@ export default function Nav() {
       <h2 className="text-xl font-bold">BookReview</h2>
 
       {/* Desktop Nav */}
-      <nav className="hidden md:flex gap-6">
+      <nav className="hidden md:flex gap-9 items-center w-4/5 justify-end">
         <Link to="/browse">Browse</Link>
 
-        {role === "admin" && <Link to="/bookreview">BookReview</Link>}
+        {role === "admin" && (
+          <>
+            <Link to="/browse">BookReview</Link>
+            <Link to="/admin-dashboard">Admin dashboard</Link>
+          </>
+        )}
+
         {role === "user" && <Link to="/my-books">My Books</Link>}
 
         {!user && <Link to="/signup">Signup</Link>}
 
         {user ? (
-          <button onClick={handleLogout} className="btn">
+          <button onClick={handleLogout} className="btn block py-1 mt-1 w-1/5 bg-gray-200 rounded ">
             Logout
           </button>
         ) : (
-          <Link to="/login" className="btn">
+          <Link to="/login" className="btn block py-1 mt-1 bg-gray-200 rounded">
             Log in
           </Link>
         )}
       </nav>
-
-      {/* Mobile Nav */}
       <div className="md:hidden">
         <details>
           <summary className="cursor-pointer px-3 py-2 bg-gray-200 rounded">Menu</summary>
-          <div className="absolute right-0 w-48 bg-white shadow p-2">
+          <div className="">
             <Link to="/browse" className="block py-1">Browse</Link>
-            {role === "admin" && <Link to="/bookreview" className="block py-1">BookReview</Link>}
+            {role === "admin" && <Link to="/bookreview" className="block py-1">BookReview</Link>&&
+            role === "admin" && <Link to="/admin-dashboard" className="block py-1">Admin dasboard</Link>
+            
+            }
             {role === "user" && <Link to="/my-books" className="block py-1">My Books</Link>}
             {!user && <Link to="/signup" className="block py-1">Signup</Link>}
             {user ? (
