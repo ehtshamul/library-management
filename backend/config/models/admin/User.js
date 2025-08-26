@@ -6,6 +6,7 @@ const bcrypt = require("bcryptjs");
 const refreshToken= new Schema({
   hash:{type:String,required:true},
   userId:{type:Schema.Types.ObjectId,ref:"User",required:true},
+  jti:{type:String,required:true,index:true},
   createdAt:{type:Date,default:Date.now,expires:"7d"},
   userAgent:{type:String,required:true},
   ipAddress:{type:String,required:true},

@@ -74,6 +74,7 @@ const login = async (req, res) => {
     await RefreshToken.create({
       hash: await hash(refreshToken),
       userId: user._id,
+      jti: tokenId,
       userAgent,
       ipAddress: ip
     });
@@ -103,7 +104,11 @@ const refresh = async (req, res) => {
     const user = await User.findById(payload.sub);
     if (!user) return res.status(401).json({ message: "User not found" });
 
-    const storedToken = await RefreshToken.findOne({ userId: user._id });
+    let storedToken = await RefreshToken.findOne({ userId: user._id, jti: payload.jti });
+    // Fallback for legacy tokens without jti stored in DB
+    if (!storedToken) {
+      storedToken = await RefreshToken.findOne({ userId: user._id }).sort({ createdAt: -1 });
+    }
     if (!storedToken || !(await compare(token, storedToken.hash))) {
       await RefreshToken.deleteMany({ userId: user._id }); // invalidate all
       return res.status(401).json({ message: "Refresh token invalidated" });
@@ -120,6 +125,7 @@ const refresh = async (req, res) => {
     await RefreshToken.create({
       hash: await hash(newRefreshToken),
       userId: user._id,
+      jti: tokenId,
       userAgent,
       ipAddress: ip
     });
@@ -140,7 +146,8 @@ const logout = async (req, res) => {
     if (token) {
       try {
         const payload = verifyRefresh(token);
-        await RefreshToken.deleteMany({ userId: payload.sub, hash: await hash(token) });
+        // delete only this session's token by userId + jti
+        await RefreshToken.deleteOne({ userId: payload.sub, jti: payload.jti });
       } catch { /* ignore errors */ }
     }
 
