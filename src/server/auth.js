@@ -3,7 +3,6 @@ import { api ,getBooks } from "./api";
 
 
 
-
 // Auth APIs
 export const login = (formData) => api.post("/login", formData);
 export const signup = (formData) => api.post("/signup", formData);
@@ -26,5 +25,4 @@ export const getAllBooks = () => getBooks.get("/getbooks");
 export const getLatestBook = () => getBooks.get("/getbooklatest");
 export const getBookById = (id) => api.get(`/${id}`);
 
-// ✅ Fixed: Use getBooks instead of Api for delete operation
-export const deleteBook = (id) => api.delete(`/deletebook/${id}`);
+export const deleteBook = (id) => api.delete(`/${id}`);

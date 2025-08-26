@@ -103,7 +103,7 @@ export default function AddBookForm({ mode = "add" }) {
           setBookData({
             title: book.title || "",
             author: book.author || "",
-            coAuthors: book.coAuthors || "",
+            coAuthors: Array.isArray(book.coAuthors) ? book.coAuthors.join(", ") : (book.coAuthors || ""),
             publisher: book.publisher || "",
             pubDate: book.pubDate || "",
             edition: book.edition || "",
@@ -185,7 +185,8 @@ export default function AddBookForm({ mode = "add" }) {
       // Numeric fields
       formData.append("pages", Number(bookData.pages));
       formData.append("copies", Number(bookData.copies));
-      formData.append("dewey", Number(bookData.dewey));
+      // Keep dewey as string to match schema
+      formData.append("dewey", bookData.dewey);
 
       // Arrays as JSON strings
       formData.append("categories", JSON.stringify(bookData.categories));
@@ -200,7 +201,7 @@ export default function AddBookForm({ mode = "add" }) {
      
       if (mode === "edit" && id) {
         // Update existing book using Redux action
-        const result = await dispatch(updateBook({ id, bookData: formData }));
+        const result = await dispatch(updateBook({ id, bookFormData: formData }));
         if (result.payload) {
           setMessage({
             type: "success",

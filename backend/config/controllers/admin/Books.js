@@ -70,12 +70,13 @@ const books = async (req, res) => {
     const categoriesArray = parseArrayField(categories);
     const tagsArray = parseArrayField(tags);
     const keywordsArray = parseArrayField(keywords);
+    const coAuthorsArray = parseArrayField(coAuthors);
 
     // Create new book
     const book = await Books.create({
       title,
       author,
-      coAuthors: coAuthors || "",
+      coAuthors: coAuthorsArray,
       publisher: publisher || "",
       pubDate: pubDate ? new Date(pubDate) : undefined,
       edition: edition || "",
@@ -123,6 +124,7 @@ const update = async (req, res) => {
     if (req.body.categories) req.body.categories = parseArrayField(req.body.categories);
     if (req.body.tags) req.body.tags = parseArrayField(req.body.tags);
     if (req.body.keywords) req.body.keywords = parseArrayField(req.body.keywords);
+    if (req.body.coAuthors) req.body.coAuthors = parseArrayField(req.body.coAuthors);
 
     // Handle file upload
     if (req.file) req.body.coverImage = req.file.path;
