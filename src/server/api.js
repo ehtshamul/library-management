@@ -4,17 +4,17 @@ import axios from "axios";
 // Axios Instances
 // =======================
 export const api = axios.create({
-  baseURL: "http://localhost:7000/api/auth",
+  baseURL: "/api/auth",
   withCredentials: true,
 });
 
 export const getBooks = axios.create({
-  baseURL: "http://localhost:7000/api/web",
+  baseURL: "/api/web",
   withCredentials: true,
 });
 
 const refreshApi = axios.create({
-  baseURL: "http://localhost:7000/api/auth",
+  baseURL: "/api/auth",
   withCredentials: true,
 });
 
