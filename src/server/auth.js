@@ -11,7 +11,7 @@ export const logout = () => api.post("/logout");
 export const refresh = () => api.post("/refresh");
 
 // Books APIs
-export const AddBook = (bookdata) =>
+export const addBook = (bookdata) =>
   api.post("/", bookdata, {
     headers: { "Content-Type": "multipart/form-data" },
   });
