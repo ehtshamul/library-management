@@ -18,12 +18,30 @@ const refreshApi = axios.create({
   withCredentials: true,
 });
 
+// Prime default Authorization header at startup if a token already exists
+try {
+  const existingToken = localStorage.getItem("accessToken");
+  if (existingToken) {
+    api.defaults.headers.common.Authorization = `Bearer ${existingToken}`;
+    getBooks.defaults.headers.common.Authorization = `Bearer ${existingToken}`;
+  }
+} catch {}
+
 // =======================
 // Attach access token
 // =======================
 const attachToken = (config) => {
   const token = localStorage.getItem("accessToken");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (token) {
+    if (config.headers && typeof config.headers.set === "function") {
+      config.headers.set("Authorization", `Bearer ${token}`);
+    } else {
+      const next = { ...(config.headers || {}) };
+      next.Authorization = `Bearer ${token}`;
+      next.authorization = `Bearer ${token}`;
+      config.headers = next;
+    }
+  }
   return config;
 };
 
@@ -80,7 +98,11 @@ const createResponseInterceptor = (instance) => async (error) => {
     return new Promise((resolve, reject) => {
       addRefreshSubscriber((token) => {
         if (!token) return reject(error);
-        originalRequest.headers.Authorization = `Bearer ${token}`;
+        if (originalRequest.headers && typeof originalRequest.headers.set === "function") {
+          originalRequest.headers.set("Authorization", `Bearer ${token}`);
+        } else {
+          originalRequest.headers = { ...(originalRequest.headers || {}), Authorization: `Bearer ${token}` };
+        }
         resolve(instance(originalRequest));
       });
     });
