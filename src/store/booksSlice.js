@@ -98,13 +98,16 @@ const booksSlice = createSlice({
          
       })
       .addCase(addBook.fulfilled, (state, action) => {
-        state.books.unshift(action.payload); // add new at beginning
+        const newBook = action.payload?.book || action.payload;
+        if (newBook) state.books.unshift(newBook); // add new at beginning
         state.status = "succeeded";
         
       })
       .addCase(updateBook.fulfilled, (state, action) => {
-        const updated = action.payload;
-        state.books = state.books.map((b) => (b._id === updated._id ? updated : b));
+        const updated = action.payload?.book || action.payload;
+        if (updated?._id) {
+          state.books = state.books.map((b) => (b._id === updated._id ? updated : b));
+        }
         state.status = "succeeded";
          
       })

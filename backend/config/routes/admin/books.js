@@ -10,10 +10,10 @@ const {auth}=require('../../middleware/auth')
 
 
 // Create
-router.post("/", auth([ "Admin", "admin" ]) , createBookValidator, uploadMiddleware, books);
+router.post("/", auth([ "Admin", "admin" ]), uploadMiddleware, createBookValidator, books);
 
 // Update
-router.put("/:id",createBookValidator,auth(["Admin","admin"]) , uploadMiddleware, update);
+router.put("/:id", auth(["Admin","admin"]), uploadMiddleware, update);
 // GET book by ID
 // GET book by ID
 router.get("/:id" ,Getid);

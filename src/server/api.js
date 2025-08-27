@@ -23,7 +23,14 @@ const refreshApi = axios.create({
 // =======================
 const attachToken = (config) => {
   const token = localStorage.getItem("accessToken");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (token) {
+    if (config.headers && typeof config.headers.set === "function") {
+      config.headers.set("Authorization", `Bearer ${token}`);
+    } else {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
   return config;
 };
 
@@ -62,8 +69,20 @@ const createResponseInterceptor = (instance) => async (error) => {
         const newToken = data?.accessToken;
         if (newToken) {
           localStorage.setItem("accessToken", newToken);
-          api.defaults.headers.common.Authorization = `Bearer ${newToken}`;
-          getBooks.defaults.headers.common.Authorization = `Bearer ${newToken}`;
+          if (api.defaults.headers && typeof api.defaults.headers.set === "function") {
+            api.defaults.headers.set("Authorization", `Bearer ${newToken}`);
+          } else {
+            api.defaults.headers = api.defaults.headers || {};
+            api.defaults.headers.common = api.defaults.headers.common || {};
+            api.defaults.headers.common.Authorization = `Bearer ${newToken}`;
+          }
+          if (getBooks.defaults.headers && typeof getBooks.defaults.headers.set === "function") {
+            getBooks.defaults.headers.set("Authorization", `Bearer ${newToken}`);
+          } else {
+            getBooks.defaults.headers = getBooks.defaults.headers || {};
+            getBooks.defaults.headers.common = getBooks.defaults.headers.common || {};
+            getBooks.defaults.headers.common.Authorization = `Bearer ${newToken}`;
+          }
         }
         onRefreshed(newToken);
       } catch (refreshError) {

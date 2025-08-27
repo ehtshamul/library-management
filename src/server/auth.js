@@ -12,14 +12,10 @@ export const refresh = () => api.post("/refresh");
 
 // Books APIs
 export const addBook = (bookdata) =>
-  api.post("/", bookdata, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  api.post("/", bookdata);
 
 export const updateBook = (id, bookdata) =>
-  api.put(`/${id}`, bookdata, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  api.put(`/${id}`, bookdata);
 
 // export const getAllBooks = () => getBooks.get("/getbooks");
 export const getLatestBook = () => getBooks.get("/getbooklatest");
