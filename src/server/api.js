@@ -99,7 +99,13 @@ const createResponseInterceptor = (instance) => async (error) => {
     return new Promise((resolve, reject) => {
       addRefreshSubscriber((token) => {
         if (!token) return reject(error);
-        originalRequest.headers.Authorization = `Bearer ${token}`;
+        // Ensure the Authorization header is correctly set for Axios v1
+        if (originalRequest.headers && typeof originalRequest.headers.set === "function") {
+          originalRequest.headers.set("Authorization", `Bearer ${token}`);
+        } else {
+          originalRequest.headers = originalRequest.headers || {};
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+        }
         resolve(instance(originalRequest));
       });
     });
