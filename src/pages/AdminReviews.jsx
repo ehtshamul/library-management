@@ -12,6 +12,15 @@ export default function AdminReviews() {
 
   const [selectedBook, setSelectedBook] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
+ const makeSlug = (title) =>
+  title.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, "");
+
+const handleView = (book) => {
+  const slug = makeSlug(book.title);
+  
+  navigate(`/book/${slug}/bookdetails`, { state: { id: book._id } });
+};
+
 
   useEffect(() => {
     if (isAdmin) dispatch(getAllBooks());
@@ -72,6 +81,7 @@ export default function AdminReviews() {
                   <td className="px-4 py-2 space-x-2">
                     <button onClick={() => handleEdit(book._id)} className="px-3 py-1 bg-blue-500 text-white rounded">Edit</button>
                     <button onClick={() => handleDelete(book)} className="px-3 py-1 bg-red-500 text-white rounded">Delete</button>
+                    <button onClick={() => handleView(book)} className="px-3 py-1 bg-green-500 hover:bg-green-700 text-white rounded">view</button>
                   </td>
                 </tr>
               ))}

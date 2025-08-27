@@ -2,7 +2,11 @@ import React, { useState, useRef, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { addBook, updateBook } from "../store/booksSlice";
 import { useNavigate, useParams } from "react-router-dom";
-import * as api from "../server/auth";
+
+import * as auth from "../server/auth";
+import { toast ,ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+import Select from "react-select";
 
 // Rest of your component code remains the same
 
@@ -55,6 +59,7 @@ const TagInput = ({ tags, onTagsChange }) => {
 
 // Main AddBookForm
 export default function AddBookForm({ mode = "add" }) {
+  const [loading, setLoading] = useState(false);
   const { id } = useParams();
   const Navigate = useNavigate();
   const dispatch = useDispatch();
@@ -91,9 +96,14 @@ export default function AddBookForm({ mode = "add" }) {
   useEffect(() => {
     const fetchBookData = async () => {
       if (mode === "edit" && id) {
+        setLoading(true);
         try {
-          const response = await api.getBookById(id);
+          const response = await auth.getBookById(id);
           const book = response.data;
+          // Convert ISO date -> yyyy-MM-dd
+      const formattedDate = book.pubDate 
+        ? new Date(book.pubDate).toISOString().split("T")[0] 
+        : "";
           
           // Convert comma-separated keywords to array if needed
           const keywordsArray = Array.isArray(book.keywords) 
@@ -105,7 +115,7 @@ export default function AddBookForm({ mode = "add" }) {
             author: book.author || "",
             coAuthors: Array.isArray(book.coAuthors) ? book.coAuthors.join(", ") : (book.coAuthors || ""),
             publisher: book.publisher || "",
-            pubDate: book.pubDate || "",
+            pubDate: formattedDate || "",
             edition: book.edition || "",
             description: book.description || "",
             isbn: book.isbn || "",
@@ -129,6 +139,8 @@ export default function AddBookForm({ mode = "add" }) {
             type: "error",
             text: "Failed to load book data. Please try again.",
           });
+        }finally{
+          setLoading(false);
         }
       }
     };
@@ -136,17 +148,17 @@ export default function AddBookForm({ mode = "add" }) {
     fetchBookData();
   }, [mode, id]);
 
-  const handleChange = (e) => {
-    const { name, value, multiple, options } = e.target;
-    if (multiple) {
-      const selected = Array.from(options)
-        .filter((o) => o.selected)
-        .map((o) => o.value);
-      setBookData({ ...bookData, [name]: selected });
-    } else {
-      setBookData({ ...bookData, [name]: value });
-    }
-  };
+ const handleChange = (e) => {
+  const { name, value, multiple, options } = e.target;
+  if (multiple) {
+    const selected = Array.from(options)
+      .filter((o) => o.selected)
+      .map((o) => o.value);
+    setBookData({ ...bookData, [name]: selected });
+  } else {
+    setBookData({ ...bookData, [name]: value });
+  }
+};
 
   const handleCoverImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -203,11 +215,17 @@ export default function AddBookForm({ mode = "add" }) {
         // Update existing book using Redux action
         const result = await dispatch(updateBook({ id, bookFormData: formData }));
         if (result.payload) {
+          toast.success("Book updated successfully!");
+          setTimeout(() => {
+
+          Navigate('../admin/reviews');
+          }, 2000);
           setMessage({
             type: "success",
             text: "Book updated successfully!",
           });
         } else {
+          toast.error("Failed to update book. Please try again.");
           setMessage({
             type: "error",
             text: "Failed to update book. Please try again.",
@@ -217,6 +235,7 @@ export default function AddBookForm({ mode = "add" }) {
         // Add new book using Redux action
         const result = await dispatch(addBook(formData));
         if (result.payload) {
+          toast.success("Book added successfully!");
           setMessage({
             type: "success",
             text: "Book added successfully!",
@@ -249,6 +268,7 @@ export default function AddBookForm({ mode = "add" }) {
 
           if (fileInputRef.current) fileInputRef.current.value = "";
         } else {
+          toast.error("Failed to add book. Please try again.");
           setMessage({
             type: "error",
             text: "Failed to add book. Please try again.",
@@ -257,17 +277,21 @@ export default function AddBookForm({ mode = "add" }) {
       }
     } catch (error) {
       console.error("Error submitting book:", error);
+      toast.error(`Failed to ${mode === "edit" ? "update" : "add"} book. Please try again.`);
       const errorMsg =
         error.response?.data?.message || 
         `Failed to ${mode === "edit" ? "update" : "add"} book. Please try again.`;
       setMessage({ type: "error", text: errorMsg });
     } finally {
+      toast.dismiss(  'loading' );
       setIsSubmitting(false);
     }
   };
 
   return (
+    
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+      <ToastContainer position="top-right" autoClose={3000} />
       <div className="w-full max-w-5xl">
         {message.text && (
           <div
@@ -280,6 +304,13 @@ export default function AddBookForm({ mode = "add" }) {
             {message.text}
           </div>
         )}
+       {loading && (
+  <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div className="bg-white rounded-xl p-6 shadow-lg">
+      <p className="text-gray-700 font-medium">Loading book details...</p>
+    </div>
+  </div>
+)}
 
         <form
           onSubmit={handleSubmit}
@@ -411,24 +442,43 @@ export default function AddBookForm({ mode = "add" }) {
             </label>
 
             {/* Categories */}
-            <label>
-              Categories:
-              <select
-                name="categories"
-                multiple
-                value={bookData.categories}
-                onChange={handleChange}
-                className="border rounded p-2 w-full"
-              >
-                <option>Computer Science</option>
-                <option>Programming</option>
-                <option>Self Help</option>
-                <option>Business</option>
-                <option>Design</option>
-                <option>Education</option>
-                <option>Health</option>
-              </select>
-            </label>
+           <label className="block font-medium mb-2">Categories:</label>
+<div className="space-y-2">
+  {[
+    "Computer Science",
+    "Programming",
+    "Self Help",
+    "Business",
+    "Design",
+    "Education",
+    "Health",
+  ].map((c) => (
+    <label key={c} className="flex items-center space-x-2">
+      <input
+        type="checkbox"
+        checked={bookData.categories.includes(c)}
+        onChange={(e) => {
+          if (e.target.checked) {
+            // add category
+            setBookData({
+              ...bookData,
+              categories: [...bookData.categories, c],
+            });
+          } else {
+            // remove category
+            setBookData({
+              ...bookData,
+              categories: bookData.categories.filter((x) => x !== c),
+            });
+          }
+        }}
+        className="h-4 w-4"
+      />
+      <span>{c}</span>
+    </label>
+  ))}
+</div>
+
 
             {/* Tags */}
             <label>

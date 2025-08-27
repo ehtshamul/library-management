@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import * as api from "../server/api";
+import * as api from "../server/auth";
+// booksSlice.js  redux toolkit slice for books management
 
 // ...existing code...
 
@@ -84,27 +85,33 @@ const booksSlice = createSlice({
         state.books = action.payload;
         state.status = "succeeded";
         state.error = null;
+         
       })
       .addCase(fetchLatestBooks.fulfilled, (state, action) => {
         state.books = action.payload;
         state.status = "succeeded";
+          
       })
       .addCase(fetchBookById.fulfilled, (state, action) => {
         state.selectedBook = action.payload;
         state.status = "succeeded";
+         
       })
       .addCase(addBook.fulfilled, (state, action) => {
         state.books.unshift(action.payload); // add new at beginning
         state.status = "succeeded";
+        
       })
       .addCase(updateBook.fulfilled, (state, action) => {
         const updated = action.payload;
         state.books = state.books.map((b) => (b._id === updated._id ? updated : b));
         state.status = "succeeded";
+         
       })
       .addCase(deleteBook.fulfilled, (state, action) => {
         state.books = state.books.filter((b) => b._id !== action.payload);
         state.status = "succeeded";
+         
       })
       .addMatcher((action) => action.type.endsWith("/pending"), (state) => {
         state.status = "loading";

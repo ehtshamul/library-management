@@ -23,7 +23,7 @@ function signAccess(user) {
 
 function signRefresh(user, tokenId) {
   return jwt.sign(
-    { sub: user._id.toString(), jti: tokenId },
+    { sub: user._id.toString(), jwt: tokenId },
     JWT_REFRESH_SECRET,
     { expiresIn: REFRESH_TOKEN_TTL }
   );

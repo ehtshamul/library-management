@@ -49,6 +49,10 @@ app.use(cors({
   },
   credentials: true,
 }));
+// app.use(cors({
+//   origin: "*", // allow any origin
+//   credentials: true
+// }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

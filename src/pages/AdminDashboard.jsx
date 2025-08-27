@@ -4,6 +4,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchDashboard } from "../store/authSlice";
 import { getAllBooks } from "../store/booksSlice";
 import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 
 const AdminDashboard = () => {
   const [showAddbook, setShowAddbook] = useState(false);
@@ -21,7 +24,7 @@ const AdminDashboard = () => {
   };
 
   const handleEdit = (bookId) => {
-    navigate(`/admin/book/${bookId}/edit`);
+    navigate(`/book/${bookId}/edit`);
     console.log(`/admin/book/${bookId}/edit`);
   };
 
@@ -30,6 +33,8 @@ const AdminDashboard = () => {
       try {
         if (!accessToken) {
           navigate("/login");
+          toast.error("Please log in to access the admin dashboard.");
+          
           return;
         }
 
@@ -39,6 +44,7 @@ const AdminDashboard = () => {
           // If both Redux & API have no user → logout
           localStorage.removeItem("accessToken");
           localStorage.removeItem("user");
+          toast.error("Session expired. Please log in again.");
           navigate("/login");
           return;
         }
@@ -47,16 +53,20 @@ const AdminDashboard = () => {
         const booksResult = await dispatch(getAllBooks());
         if (booksResult.payload) {
           setBooks(booksResult.payload);
+        
         }
+        
        
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
+        toast.error("Failed to load dashboard data. Please try again.");
         if (
           error.response &&
           (error.response.status === 401 || error.response.status === 403)
         ) {
           localStorage.removeItem("accessToken");
           localStorage.removeItem("user");
+          toast.error("Unauthorized access. Please log in again.");
           navigate("/login");
         }
       }
@@ -70,6 +80,7 @@ const AdminDashboard = () => {
       className="relative flex size-full min-h-screen flex-col bg-slate-50 overflow-x-hidden"
       style={{ fontFamily: 'Inter, "Noto Sans", sans-serif' }}
     >
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="light" />
       <div className="layout-container flex h-full grow flex-col">
         {/* Welcome Section */}
         <div className="px-40 flex flex-1 justify-center py-5">

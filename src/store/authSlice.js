@@ -1,4 +1,4 @@
-// authSlice.js
+// authSlice.js  redux toolkit slice for authentication
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import * as api from "../server/auth";
 
@@ -115,6 +115,7 @@ const authSlice = createSlice({
       .addCase(fetchDashboard.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.user = action.payload.user;
+         
 
         // keep user in localStorage updated
         localStorage.setItem("user", JSON.stringify(action.payload.user));

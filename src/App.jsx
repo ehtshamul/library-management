@@ -11,6 +11,7 @@ import AddBookForm from "./pages/Addbook";
 import ProtectedRoute from "./components/ProtectedRoute";
 import BookGrid from "./pages/Bookesview";
 import AdminReviews from "./pages/AdminReviews";
+import BookDetail from "./pages/BookDetail";
 
 function App() {
   return (
@@ -44,7 +45,10 @@ function App() {
           </ProtectedRoute>
         } />
 
-        {/* ...other routes */}
+        {/* bookd Details */}
+        <Route path ='/book/:slug/bookdetails' element={<BookDetail/>}/>
+
+       
       </Routes>
       <Footer />
     </>

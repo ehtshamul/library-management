@@ -1,36 +1,96 @@
 import axios from "axios";
 
-
- export const api = axios.create({
-  baseURL: "http://localhost:7000/api/auth", // adjust to your backend base URL
+// =======================
+// Axios Instances
+// =======================
+export const api = axios.create({
+  baseURL: "http://localhost:7000/api/auth",
   withCredentials: true,
 });
 
- export const getBooks= axios.create({
-  baseURL: "http://localhost:7000/api/web", // adjust to your backend base URL
+export const getBooks = axios.create({
+  baseURL: "http://localhost:7000/api/web",
   withCredentials: true,
 });
 
-// attach token automatically if present
-api.interceptors.request.use((config) => {
+const refreshApi = axios.create({
+  baseURL: "http://localhost:7000/api/auth",
+  withCredentials: true,
+});
+
+// =======================
+// Attach access token
+// =======================
+const attachToken = (config) => {
   const token = localStorage.getItem("accessToken");
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
-});
+};
 
-// book endpoints (export helpers used by slices)
-export const getAllBooks = () => getBooks.get("/getbooks");
+api.interceptors.request.use(attachToken);
+getBooks.interceptors.request.use(attachToken);
 
-// get boohs by id for update book get date 
-export const getBookById = (id) => api.get(`/${id}`);
+// =======================
+// Refresh token handling
+// =======================
+let isRefreshing = false;
+let refreshSubscribers = [];
 
-// add books or create book
-export const addBook = (formData) =>
-  api.post("/", formData, { headers: { "Content-Type": "multipart/form-data" } });
-// edit books 
-export const updateBook = (id, formData) =>
-  api.put(`/${id}`, formData, { headers: { "Content-Type": "multipart/form-data" } });
-// delete books 
-export const deleteBook = (id) => api.delete(`/${id}`);
+function onRefreshed(newToken) {
+  refreshSubscribers.forEach(cb => cb(newToken));
+  refreshSubscribers = [];
+}
+
+function addRefreshSubscriber(callback) {
+  refreshSubscribers.push(callback);
+}
+
+const createResponseInterceptor = (instance) => async (error) => {
+  const { response, config: originalRequest } = error;
+  if (!response) return Promise.reject(error);
+
+  const status = response.status;
+  const isRefreshEndpoint = originalRequest.url?.includes("/refresh");
+
+  if (status === 401 && !originalRequest._retry && !isRefreshEndpoint) {
+    originalRequest._retry = true;
+
+    if (!isRefreshing) {
+      isRefreshing = true;
+      try {
+        const { data } = await refreshApi.post("/refresh");
+        const newToken = data?.accessToken;
+        if (newToken) {
+          localStorage.setItem("accessToken", newToken);
+          api.defaults.headers.common.Authorization = `Bearer ${newToken}`;
+          getBooks.defaults.headers.common.Authorization = `Bearer ${newToken}`;
+        }
+        onRefreshed(newToken);
+      } catch (refreshError) {
+        onRefreshed(null);
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("user");
+        window.dispatchEvent(new Event('storage'));
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
+    return new Promise((resolve, reject) => {
+      addRefreshSubscriber((token) => {
+        if (!token) return reject(error);
+        originalRequest.headers.Authorization = `Bearer ${token}`;
+        resolve(instance(originalRequest));
+      });
+    });
+  }
+
+  return Promise.reject(error);
+};
+
+// Attach interceptors
+api.interceptors.response.use(res => res, createResponseInterceptor(api));
+getBooks.interceptors.response.use(res => res, createResponseInterceptor(getBooks));
 
 export default api;

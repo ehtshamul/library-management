@@ -2,7 +2,7 @@
 import { api ,getBooks } from "./api";
 
 
-
+// auth .js 
 // Auth APIs
 export const login = (formData) => api.post("/login", formData);
 export const signup = (formData) => api.post("/signup", formData);
@@ -21,8 +21,10 @@ export const updateBook = (id, bookdata) =>
     headers: { "Content-Type": "multipart/form-data" },
   });
 
-export const getAllBooks = () => getBooks.get("/getbooks");
+// export const getAllBooks = () => getBooks.get("/getbooks");
 export const getLatestBook = () => getBooks.get("/getbooklatest");
+// export const getBookById = (id) => api.get(`/${id}`);
+export const getAllBooks = () => getBooks.get("/getbooks");
 export const getBookById = (id) => api.get(`/${id}`);
 
 export const deleteBook = (id) => api.delete(`/${id}`);

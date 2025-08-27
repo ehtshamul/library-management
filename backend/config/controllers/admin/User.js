@@ -6,37 +6,37 @@ const {
   verifyAccess,
   verifyRefresh,
   hash,
-  compare
+  compare,
 } = require("../../utils/Token");
 
-// Cookie options
+// Cookie options for refresh token
 const cookieOpts = {
   httpOnly: true,
-  sameSite: "lax",
+  sameSite: "lax", // 'none' if cross-site, must use secure
   secure: process.env.NODE_ENV === "production",
-  path: "/api/auth/refresh",
-  maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-  domain: process.env.COOKIE_DOMAIN || undefined
+  path: "/", // send cookie to all routes
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 
 // Helper to get client info
 function extractClient(req) {
   return {
     userAgent: req.headers["user-agent"],
-    ip: req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket?.remoteAddress
+    ip: req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket?.remoteAddress,
   };
 }
 
 // ------------------ SIGNUP ------------------
 const signup = async (req, res) => {
   const { name, email, password, confirmPassword, role } = req.body;
+
+  if (!name || !email || !password || !confirmPassword || !role)
+    return res.status(400).json({ success: false, message: "All fields are required" });
+
+  if (password !== confirmPassword)
+    return res.status(400).json({ success: false, message: "Passwords do not match" });
+
   try {
-    if (!name || !email || !password || !confirmPassword || !role)
-      return res.status(400).json({ success: false, message: "Please fill all fields" });
-
-    if (password !== confirmPassword)
-      return res.status(400).json({ success: false, message: "Passwords do not match" });
-
     const existingUser = await User.findOne({ email });
     if (existingUser)
       return res.status(400).json({ success: false, message: "User already exists" });
@@ -45,51 +45,49 @@ const signup = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: "User created successfully",
-      user: { id: user._id, name: user.name, email: user.email, role: user.role }
+      user: { id: user._id, name: user.name, email: user.email, role: user.role },
     });
   } catch (error) {
-    console.error("Error creating user:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
 // ------------------ LOGIN ------------------
 const login = async (req, res) => {
   const { email, password } = req.body;
-  try {
-    if (!email || !password)
-      return res.status(400).json({ success: false, message: "Please enter email and password" });
 
+  if (!email || !password)
+    return res.status(400).json({ success: false, message: "Email & password required" });
+
+  try {
     const user = await User.findOne({ email });
     if (!user || !(await user.comparePassword(password)))
-      return res.status(401).json({ success: false, message: "Invalid email or password" });
+      return res.status(401).json({ success: false, message: "Invalid credentials" });
 
     const tokenId = crypto.randomUUID();
     const accessToken = signAccess(user);
     const refreshToken = signRefresh(user, tokenId);
 
-    // Store hashed refresh token in DB
+    // Save hashed refresh token
     const { userAgent, ip } = extractClient(req);
     await RefreshToken.create({
       hash: await hash(refreshToken),
       userId: user._id,
       userAgent,
-      ipAddress: ip
+      ipAddress: ip,
     });
 
-    // Send refresh token as httpOnly cookie
+    // Send refresh token cookie
     res.cookie("rt", refreshToken, cookieOpts);
 
-    return res.status(200).json({
-      success: true,
-      message: "Login successful",
+    res.json({
       accessToken,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role }
+      user: { id: user._id, name: user.name, email: user.email, role: user.role },
     });
   } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -100,34 +98,40 @@ const refresh = async (req, res) => {
     if (!token) return res.status(401).json({ message: "No refresh token" });
 
     const payload = verifyRefresh(token);
+    if (!payload) return res.status(401).json({ message: "Invalid refresh token" });
+
     const user = await User.findById(payload.sub);
     if (!user) return res.status(401).json({ message: "User not found" });
 
-    const storedToken = await RefreshToken.findOne({ userId: user._id });
-    if (!storedToken || !(await compare(token, storedToken.hash))) {
+    // Find all refresh tokens for user and compare
+    const tokens = await RefreshToken.find({ userId: user._id });
+    const match = await Promise.all(tokens.map(async t => (await compare(token, t.hash)) ? t : null));
+    const storedToken = match.find(t => t !== null);
+
+    if (!storedToken) {
       await RefreshToken.deleteMany({ userId: user._id }); // invalidate all
       return res.status(401).json({ message: "Refresh token invalidated" });
     }
 
     // Rotate token
     await RefreshToken.deleteOne({ _id: storedToken._id });
-
-    const tokenId = crypto.randomUUID();
+    const newTokenId = crypto.randomUUID();
     const newAccessToken = signAccess(user);
-    const newRefreshToken = signRefresh(user, tokenId);
+    const newRefreshToken = signRefresh(user, newTokenId);
 
     const { userAgent, ip } = extractClient(req);
     await RefreshToken.create({
       hash: await hash(newRefreshToken),
       userId: user._id,
       userAgent,
-      ipAddress: ip
+      ipAddress: ip,
     });
 
     res.cookie("rt", newRefreshToken, cookieOpts);
-    return res.json({ accessToken: newAccessToken });
-  } catch {
-    return res.status(401).json({ message: "Invalid/expired refresh token" });
+    res.json({ accessToken: newAccessToken });
+  } catch (error) {
+    console.error(error);
+    res.status(401).json({ message: "Refresh failed" });
   }
 };
 
@@ -138,15 +142,19 @@ const logout = async (req, res) => {
     res.clearCookie("rt", { ...cookieOpts, maxAge: 0 });
 
     if (token) {
-      try {
-        const payload = verifyRefresh(token);
-        await RefreshToken.deleteMany({ userId: payload.sub, hash: await hash(token) });
-      } catch { /* ignore errors */ }
+      const payload = verifyRefresh(token);
+      if (payload) {
+        const tokens = await RefreshToken.find({ userId: payload.sub });
+        for (const t of tokens) {
+          if (await compare(token, t.hash)) await RefreshToken.deleteOne({ _id: t._id });
+        }
+      }
     }
 
-    return res.json({ message: "Logged out successfully" });
+    res.json({ message: "Logged out successfully" });
   } catch (error) {
-    return res.status(500).json({ message: "Logout error", error: error.message });
+    console.error(error);
+    res.status(500).json({ message: "Logout error" });
   }
 };
 

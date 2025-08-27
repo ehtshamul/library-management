@@ -12,10 +12,19 @@ export default function BookGrid() {
   const isAdmin = (user?.role || "").toLowerCase() === "admin";
   const [selectedBook, setSelectedBook] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
+  const makeSlug = (title) =>
+  title.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, "");
+
+const handleView = (book) => {
+  const slug = makeSlug(book.title);
+  // اگر آپ کو ID بھی ساتھ چاہیے تو query param یا state میں بھیج سکتے ہیں
+  navigate(`/book/${slug}/bookdetails`, { state: { id: book._id } });
+};
 
   const handleEdit = (bookId) => {
     navigate(`/book/${bookId}/edit`); // route: /book/:id/edit
   };
+  
 
   const handleDelete = (book) => {
     setSelectedBook(book);
@@ -49,6 +58,7 @@ export default function BookGrid() {
           {Books.map((book) => (
             <div
               key={book.id || book._id}
+              onClick={() => handleView(book)}
               className="flex flex-col group cursor-pointer bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all p-4 max-w-[350px] w-full"
             >
               {/* Image */}
@@ -87,7 +97,10 @@ export default function BookGrid() {
                     >
                       Delete
                     </button>
+                    
+                   
                   </div>
+                 
                 )}
               </div>
             </div>
