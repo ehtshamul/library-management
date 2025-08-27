@@ -24,23 +24,23 @@ function App() {
         <Route path='/forgot-password' element={<ForgotPassword />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/admin-dashboard" element={
-          <ProtectedRoute>
+          <ProtectedRoute adminOnly>
           <AdminDashboard />
           </ProtectedRoute>
           } />
           <Route path="/browse" element={<BookGrid />} />
         <Route path="/book/:id/edit" element={
-          <ProtectedRoute>
+          <ProtectedRoute adminOnly>
             <AddBookForm mode='edit' />
           </ProtectedRoute>
         } />
         <Route path="/book/create" element={
-          <ProtectedRoute>
+          <ProtectedRoute adminOnly>
             <AddBookForm mode='create' />
           </ProtectedRoute>
         } />
         <Route path="/admin/reviews" element={
-          <ProtectedRoute>
+          <ProtectedRoute adminOnly>
             <AdminReviews />
           </ProtectedRoute>
         } />

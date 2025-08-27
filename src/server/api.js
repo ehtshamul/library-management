@@ -59,6 +59,18 @@ const createResponseInterceptor = (instance) => async (error) => {
   const status = response.status;
   const isRefreshEndpoint = originalRequest.url?.includes("/refresh");
 
+  // Handle Forbidden immediately by clearing auth and redirecting
+  if (status === 403) {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user");
+    try {
+      if (window?.location?.pathname !== "/login") {
+        window.location.replace('/login');
+      }
+    } catch {}
+    return Promise.reject(error);
+  }
+
   if (status === 401 && !originalRequest._retry && !isRefreshEndpoint) {
     originalRequest._retry = true;
 
@@ -90,6 +102,11 @@ const createResponseInterceptor = (instance) => async (error) => {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("user");
         window.dispatchEvent(new Event('storage'));
+        try {
+          if (window?.location?.pathname !== "/login") {
+            window.location.replace('/login');
+          }
+        } catch {}
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
