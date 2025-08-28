@@ -1,4 +1,14 @@
 {
+  "name": "backend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node app.js"
+  }
+}
+
+{
   "name": "clear",
   "version": "1.0.0",
   "description": "",

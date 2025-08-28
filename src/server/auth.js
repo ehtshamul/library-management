@@ -12,18 +12,17 @@ export const refresh = () => api.post("/refresh");
 
 // Books APIs
 export const addBook = (bookdata) =>
-  api.post("/", bookdata);
+  api.post("/books", bookdata);
 
 export const updateBook = (id, bookdata) =>
-  api.put(`/${id}`, bookdata);
+  api.put(`/books/${id}`, bookdata);
 
 // export const getAllBooks = () => getBooks.get("/getbooks");
 export const getLatestBook = () => getBooks.get("/getbooklatest");
-// export const getBookById = (id) => api.get(`/${id}`);
 export const getAllBooks = () => getBooks.get("/getbooks");
-export const getBookById = (id) => api.get(`/${id}`);
+export const getBookById = (id) => api.get(`/books/${id}`);
 
-export const deleteBook = (id) => api.delete(`/${id}`);
+export const deleteBook = (id) => api.delete(`/books/${id}`);
 export const searchBooks = (query) =>
   getBooks.get("/search", { params: { query } });
 // get approved admin 
