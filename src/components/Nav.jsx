@@ -1,5 +1,5 @@
 // Nav.jsx
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logoutUser } from "../store/authSlice";
@@ -9,62 +9,129 @@ export default function Nav() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
-
   const role = user?.role?.toLowerCase() || "";
+
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = () => {
     dispatch(logoutUser({ navigate, toast }));
+    setMenuOpen(false);
   };
 
   return (
-    <header className="flex items-center justify-between border-b px-4 py-3 bg-white pr-9">
-      <h2 className="text-xl font-bold">BookReview</h2>
+    <header className="bg-white shadow-md">
+      <div className="container mx-auto flex justify-between items-center py-3 px-4">
+        <h2 className="text-2xl font-bold text-blue-600">BookReview</h2>
 
-      {/* Desktop Nav */}
-      <nav className="hidden md:flex gap-9 items-center w-4/5 justify-end">
-        <Link to="/browse">Browse</Link>
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex gap-6 items-center">
+          <Link className="hover:text-blue-500 transition" to="/">Browse</Link>
 
-        {role === "admin" && (
-          <>
-            <Link to="/admin-dashboard">Admin dashboard</Link>
-            <Link to="/admin/reviews">Admin Reviews</Link>
-          </>
-        )}
+          {role === "admin" && (
+            <>
+              <Link className="hover:text-blue-500 transition" to="/admin-dashboard">Admin Dashboard</Link>
+              <Link className="hover:text-blue-500 transition" to="/admin/reviews">Admin Reviews</Link>
+            </>
+          )}
 
-        {role === "user" && <Link to="/my-books">My Books</Link>}
+          {role === "user" && <Link className="hover:text-blue-500 transition" to="/my-books">My Books</Link>}
 
-        {!user && <Link to="/signup">Signup</Link>}
+          {!user && <Link className="hover:text-blue-500 transition" to="/signup">Signup</Link>}
 
-        {user ? (
-          <button onClick={handleLogout} className="btn block py-1 mt-1 w-1/5 bg-gray-200 rounded ">
-            Logout
+          {user ? (
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600 transition"
+            >
+              Logout
+            </button>
+          ) : (
+            <Link
+              className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600 transition"
+              to="/login"
+            >
+              Log in
+            </Link>
+          )}
+        </nav>
+
+        {/* Mobile Nav */}
+        <div className="md:hidden relative">
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+          >
+            Menu
           </button>
-        ) : (
-          <Link to="/login" className="btn block py-1 mt-1 bg-gray-200 rounded">
-            Log in
-          </Link>
-        )}
-      </nav>
-      <div className="md:hidden">
-        <details>
-          <summary className="cursor-pointer px-3 py-2 bg-gray-200 rounded">Menu</summary>
-          <div className="">
-            <Link to="/browse" className="block py-1">Browse</Link>
-            {role === "admin" && (
-              <>
-                <Link to="/admin-dashboard" className="block py-1">Admin dashboard</Link>
-                <Link to="/admin/reviews" className="block py-1">Admin Reviews</Link>
-              </>
-            )}
-            {role === "user" && <Link to="/my-books" className="block py-1">My Books</Link>}
-            {!user && <Link to="/signup" className="block py-1">Signup</Link>}
-            {user ? (
-              <button onClick={handleLogout} className="w-full py-1 mt-1 bg-gray-200 rounded">Logout</button>
-            ) : (
-              <Link to="/login" className="block py-1 mt-1 bg-gray-200 rounded">Log in</Link>
-            )}
-          </div>
-        </details>
+
+          {menuOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-md flex flex-col z-50">
+              <Link
+                onClick={() => setMenuOpen(false)}
+                className="px-4 py-2 hover:bg-gray-100"
+                to="/"
+              >
+                Browse
+              </Link>
+
+              {role === "admin" && (
+                <>
+                  <Link
+                    onClick={() => setMenuOpen(false)}
+                    className="px-4 py-2 hover:bg-gray-100"
+                    to="/admin-dashboard"
+                  >
+                    Admin Dashboard
+                  </Link>
+                  <Link
+                    onClick={() => setMenuOpen(false)}
+                    className="px-4 py-2 hover:bg-gray-100"
+                    to="/admin/reviews"
+                  >
+                    Admin Reviews
+                  </Link>
+                </>
+              )}
+
+              {role === "user" && (
+                <Link
+                  onClick={() => setMenuOpen(false)}
+                  className="px-4 py-2 hover:bg-gray-100"
+                  to="/my-books"
+                >
+                  My Books
+                </Link>
+              )}
+
+              {!user && (
+                <Link
+                  onClick={() => setMenuOpen(false)}
+                  className="px-4 py-2 hover:bg-gray-100"
+                  to="/signup"
+                >
+                  Signup
+                </Link>
+              )}
+
+              {user ? (
+                <button
+                  onClick={handleLogout}
+                  className="text-left px-4 py-2 hover:bg-gray-100 w-full"
+                >
+                  Logout
+                </button>
+              ) : (
+                <Link
+                  onClick={() => setMenuOpen(false)}
+                  className="px-4 py-2 hover:bg-gray-100"
+                  to="/login"
+                >
+                  Log in
+                </Link>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

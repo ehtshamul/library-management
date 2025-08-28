@@ -16,7 +16,7 @@ export const getAllBooks = createAsyncThunk("books/fetchAll", async (_, thunkAPI
 
 export const fetchLatestBooks = createAsyncThunk("books/fetchLatest", async (_, thunkAPI) => {
   try {
-    const res = await api.getAllBooks(); // backend should support sorting or we slice here
+    const res = await api.getLatestBook(); // backend should support sorting or we slice here
     return res.data;
   } catch (err) {
     return thunkAPI.rejectWithValue(err.response?.data || err.message);
@@ -61,6 +61,14 @@ export const deleteBook = createAsyncThunk("books/remove", async (id, thunkAPI) 
     return thunkAPI.rejectWithValue(err.response?.data || err.message);
   }
 });
+export const searchBooks =createAsyncThunk("books/search", async (query,thunkApi)=>{
+  try{
+    const res=await api.searchBooks(query);
+    return res.data;
+  }catch(err){
+    return thunkApi.rejectWithValue(err.response?.data || err.message);
+  } 
+})
 
 // 🔹 Initial State
 const initialState = {
@@ -116,6 +124,11 @@ const booksSlice = createSlice({
         state.status = "succeeded";
          
       })
+      .addCase(searchBooks.fulfilled,(state,action)=>{
+        state.books=action.payload;
+        state.status="succeeded";
+      })
+      
       .addMatcher((action) => action.type.endsWith("/pending"), (state) => {
         state.status = "loading";
         state.error = null;
@@ -124,7 +137,9 @@ const booksSlice = createSlice({
         state.status = "failed";
         state.error = action.payload || action.error.message;
       });
+      
   },
+
 });
 
 // 🔹 Exports

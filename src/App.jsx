@@ -5,7 +5,7 @@ import Footer from "./components/Footer";
 import LoginPage from "./components/Login";
 import ForgotPassword from "./components/forgetpassword";
 import SignupPage from "./components/Siguppage"; // Corrected import path
-import Home from "./pages/Home"; // Assuming you have a Home component
+
 import AdminDashboard from "./pages/AdminDashboard";
 import AddBookForm from "./pages/Addbook";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -19,7 +19,7 @@ function App() {
       <Nav />
       <Routes>
         {/* Corrected element prop */}
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<BookGrid/>} />
         <Route path="/login" element={<LoginPage />} />
         <Route path='/forgot-password' element={<ForgotPassword />} />
         <Route path="/signup" element={<SignupPage />} />
@@ -28,7 +28,7 @@ function App() {
           <AdminDashboard />
           </ProtectedRoute>
           } />
-          <Route path="/browse" element={<BookGrid />} />
+         
         <Route path="/book/:id/edit" element={
           <ProtectedRoute adminOnly>
             <AddBookForm mode='edit' />

@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import AddBookForm from "./Addbook";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchDashboard } from "../store/authSlice";
 import { getAllBooks } from "../store/booksSlice";
+
+
+import { fetchLatestBooks } from "../store/booksSlice";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -11,10 +14,14 @@ import "react-toastify/dist/ReactToastify.css";
 const AdminDashboard = () => {
   const [showAddbook, setShowAddbook] = useState(false);
   const [books, setBooks] = useState([]);
-  
+  const [allbook, setAllbook] = useState([]);
+ 
+
+
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const didFetchRef = useRef(false);
 
   // ✅ Use Redux state directly
   const { user, accessToken } = useSelector((state) => state.auth);
@@ -34,7 +41,7 @@ const AdminDashboard = () => {
         if (!accessToken) {
           navigate("/login");
           toast.error("Please log in to access the admin dashboard.");
-          
+
           return;
         }
 
@@ -50,13 +57,19 @@ const AdminDashboard = () => {
         }
 
         // 2. Fetch all books
-        const booksResult = await dispatch(getAllBooks());
+        const booksResult = await dispatch(fetchLatestBooks());
         if (booksResult.payload) {
           setBooks(booksResult.payload);
-        
+
         }
-        
+        const allBooksResult = await dispatch(getAllBooks());
+        if (allBooksResult.payload) {
+          setAllbook(allBooksResult.payload);
+
+        }
        
+        
+
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
         toast.error("Failed to load dashboard data. Please try again.");
@@ -72,7 +85,11 @@ const AdminDashboard = () => {
       }
     };
 
-    fetchDashboardData();
+    // Prevent multiple runs when `accessToken` or `user` changes
+    if (!didFetchRef.current) {
+      didFetchRef.current = true;
+      fetchDashboardData();
+    }
   }, [dispatch, navigate, accessToken, user]);
 
   return (
@@ -123,7 +140,7 @@ const AdminDashboard = () => {
               </div>
               <div className="flex flex-1 flex-col gap-2 rounded-lg p-6 border border-[#cedbe8]">
                 <p className="text-base font-medium">Total Books</p>
-                <p className="text-2xl font-bold">{books.length}</p>
+                <p className="text-2xl font-bold">{allbook.length}</p>
               </div>
               <div className="flex flex-1 flex-col gap-2 rounded-lg p-6 border border-[#cedbe8]">
                 <p className="text-base font-medium">Borrowed Books</p>
@@ -193,6 +210,7 @@ const AdminDashboard = () => {
             <h2 className="text-[22px] font-bold px-4 pb-3 pt-5">
               Latest Activity
             </h2>
+
             <div className="px-4 py-3">
               <div className="flex overflow-hidden rounded-lg border border-[#cedbe8] bg-slate-50">
                 <table className="flex-1">
@@ -254,9 +272,7 @@ const AdminDashboard = () => {
                     {/* Book Details */}
                     <div className="flex flex-col flex-grow">
                       <p className="text-lg font-semibold">{book.title}</p>
-                      <p className="text-sm text-gray-600 mb-3">
-                        by {book.author}
-                      </p>
+                      <p className="text-sm text-gray-600 mb-3">by {book.author}</p>
 
                       {/* Edit Button */}
                       <button

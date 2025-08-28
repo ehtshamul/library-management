@@ -18,6 +18,9 @@ const userRouter = require("./config/routes/admin/User");
 const dashboardRouter = require("./config/routes/admin/Dashboard");
 const booksRouter = require("./config/routes/admin/books");
 const getBooksRouter = require("./config/routes/web/getbooks");
+const searchRouter = require("./config/routes/web/search");
+const reviewRouter = require("./config/routes/web/Review");
+const review = require("./config/models/admin/review");
 
 dotenv.config();
 
@@ -77,8 +80,21 @@ connectDB();
 // Routes
 app.use("/api/auth", userRouter);
 app.use("/api/auth", dashboardRouter);
-app.use("/api/auth", booksRouter);
+// Mount books router under /api/auth/books to avoid catching other /api/auth routes like /api/auth/admin
+app.use("/api/auth/books", booksRouter);
 app.use("/api/web", getBooksRouter);
+app.use("/api/web", searchRouter);
+// for add review 
+app.use("/api/web", reviewRouter);
+// for delect review  own
+app.use("/api/web", reviewRouter);
+// for approved review by admin
+
+// show review on books
+app.use("/api/web", reviewRouter);
+// admin review 
+app.use("/api/auth", reviewRouter);
+
 
 // Simple test route
 app.get("/", (req, res) => {

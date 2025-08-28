@@ -19,17 +19,12 @@ const refreshApi = axios.create({
 });
 
 // =======================
-// Attach access token
+// Token Attachment
 // =======================
 const attachToken = (config) => {
   const token = localStorage.getItem("accessToken");
   if (token) {
-    if (config.headers && typeof config.headers.set === "function") {
-      config.headers.set("Authorization", `Bearer ${token}`);
-    } else {
-      config.headers = config.headers || {};
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    config.headers["Authorization"] = `Bearer ${token}`;
   }
   return config;
 };
@@ -38,101 +33,113 @@ api.interceptors.request.use(attachToken);
 getBooks.interceptors.request.use(attachToken);
 
 // =======================
-// Refresh token handling
+// Refresh Token Logic
 // =======================
 let isRefreshing = false;
-let refreshSubscribers = [];
+let refreshQueue = [];
 
-function onRefreshed(newToken) {
-  refreshSubscribers.forEach(cb => cb(newToken));
-  refreshSubscribers = [];
-}
+const processQueue = (error, token = null) => {
+  refreshQueue.forEach(({ resolve, reject }) => {
+    token ? resolve(token) : reject(error);
+  });
+  refreshQueue = [];
+};
 
-function addRefreshSubscriber(callback) {
-  refreshSubscribers.push(callback);
-}
+const refreshToken = async () => {
+  try {
+    const { data } = await refreshApi.post("/refresh");
+    const newToken = data?.accessToken;
 
-const createResponseInterceptor = (instance) => async (error) => {
+    if (newToken) {
+      localStorage.setItem("accessToken", newToken);
+      api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
+      getBooks.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
+    }
+
+    return newToken;
+  } catch (err) {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user");
+    window.dispatchEvent(new Event("storage"));
+    if (window.location.pathname !== "/login") {
+      window.location.replace("/login");
+    }
+    throw err;
+  }
+};
+
+// =======================
+// Response Interceptor
+// =======================
+const handleResponseError = (instance) => async (error) => {
   const { response, config: originalRequest } = error;
   if (!response) return Promise.reject(error);
 
-  const status = response.status;
-  const isRefreshEndpoint = originalRequest.url?.includes("/refresh");
+  const { status } = response;
+  const isRefreshCall = originalRequest.url?.includes("/refresh");
 
-  // Handle Forbidden immediately by clearing auth and redirecting
+  // Force logout on forbidden
   if (status === 403) {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("user");
-    try {
-      if (window?.location?.pathname !== "/login") {
-        window.location.replace('/login');
-      }
-    } catch {}
+    if (window.location.pathname !== "/login") {
+      window.location.replace("/login");
+    }
     return Promise.reject(error);
   }
 
-  if (status === 401 && !originalRequest._retry && !isRefreshEndpoint) {
+  // Handle unauthorized with refresh
+  if (status === 401 && !originalRequest._retry && !isRefreshCall) {
     originalRequest._retry = true;
 
-    if (!isRefreshing) {
-      isRefreshing = true;
-      try {
-        const { data } = await refreshApi.post("/refresh");
-        const newToken = data?.accessToken;
-        if (newToken) {
-          localStorage.setItem("accessToken", newToken);
-          if (api.defaults.headers && typeof api.defaults.headers.set === "function") {
-            api.defaults.headers.set("Authorization", `Bearer ${newToken}`);
-          } else {
-            api.defaults.headers = api.defaults.headers || {};
-            api.defaults.headers.common = api.defaults.headers.common || {};
-            api.defaults.headers.common.Authorization = `Bearer ${newToken}`;
-          }
-          if (getBooks.defaults.headers && typeof getBooks.defaults.headers.set === "function") {
-            getBooks.defaults.headers.set("Authorization", `Bearer ${newToken}`);
-          } else {
-            getBooks.defaults.headers = getBooks.defaults.headers || {};
-            getBooks.defaults.headers.common = getBooks.defaults.headers.common || {};
-            getBooks.defaults.headers.common.Authorization = `Bearer ${newToken}`;
-          }
-        }
-        onRefreshed(newToken);
-      } catch (refreshError) {
-        onRefreshed(null);
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("user");
-        window.dispatchEvent(new Event('storage'));
-        try {
-          if (window?.location?.pathname !== "/login") {
-            window.location.replace('/login');
-          }
-        } catch {}
-        return Promise.reject(refreshError);
-      } finally {
-        isRefreshing = false;
-      }
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => {
+        refreshQueue.push({
+          resolve: (token) => {
+            originalRequest.headers["Authorization"] = `Bearer ${token}`;
+            resolve(instance(originalRequest));
+          },
+          reject,
+        });
+      });
     }
 
-    return new Promise((resolve, reject) => {
-      addRefreshSubscriber((token) => {
-        if (!token) return reject(error);
-        // Ensure the Authorization header is correctly set for Axios v1
-        if (originalRequest.headers && typeof originalRequest.headers.set === "function") {
-          originalRequest.headers.set("Authorization", `Bearer ${token}`);
-        } else {
-          originalRequest.headers = originalRequest.headers || {};
-          originalRequest.headers.Authorization = `Bearer ${token}`;
-        }
-        resolve(instance(originalRequest));
-      });
-    });
+    isRefreshing = true;
+
+    try {
+      const newToken = await refreshToken();
+      processQueue(null, newToken);
+
+      if (newToken) {
+        originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
+        return instance(originalRequest);
+      }
+    } catch (err) {
+      processQueue(err, null);
+      return Promise.reject(err);
+    } finally {
+      isRefreshing = false;
+    }
   }
 
   return Promise.reject(error);
 };
 
-// Attach interceptors
-api.interceptors.response.use(res => res, createResponseInterceptor(api));
-getBooks.interceptors.response.use(res => res, createResponseInterceptor(getBooks));
+// =======================
+// Attach Interceptors Once
+// =======================
+const attachResponseInterceptor = (instance) => {
+
+  if (!instance.__hasResponseInterceptor) {
+    instance.interceptors.response.use(
+      (res) => res,
+      handleResponseError(instance)
+    );
+    instance.__hasResponseInterceptor = true;
+  }
+};
+
+attachResponseInterceptor(api);
+attachResponseInterceptor(getBooks);
 
 export default api;

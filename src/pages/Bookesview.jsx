@@ -1,141 +1,130 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchLatestBooks, deleteBook } from "../store/booksSlice";
+import { searchBooks } from "../store/booksSlice";
 import { useNavigate } from "react-router-dom";
+import {
+  Box,
+  Grid,
+  Card,
+  CardMedia,
+  CardContent,
+  Typography,
+  TextField,
+  Container,
+  CardActionArea,
+} from "@mui/material";
 
-// ...existing code...
 export default function BookGrid() {
   const dispatch = useDispatch();
+  const [search, setSearch] = useState("");
   const navigate = useNavigate();
-  const Books = useSelector((state) => state.books.books); // use redux store
-  const { user } = useSelector((state) => state.auth);
-  const isAdmin = (user?.role || "").toLowerCase() === "admin";
-  const [selectedBook, setSelectedBook] = useState(null);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const { books: Books } = useSelector((state) => state.books);
+
   const makeSlug = (title) =>
-  title.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, "");
+    title.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, "");
 
-const handleView = (book) => {
-  const slug = makeSlug(book.title);
-  // اگر آپ کو ID بھی ساتھ چاہیے تو query param یا state میں بھیج سکتے ہیں
-  navigate(`/book/${slug}/bookdetails`, { state: { id: book._id } });
-};
-
-  const handleEdit = (bookId) => {
-    navigate(`/book/${bookId}/edit`); // route: /book/:id/edit
-  };
-  
-
-  const handleDelete = (book) => {
-    setSelectedBook(book);
-    setShowConfirm(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!selectedBook?._id) return;
-    await dispatch(deleteBook(selectedBook._id)).unwrap();
-    setShowConfirm(false);
-    setSelectedBook(null);
+  const handleView = (book) => {
+    const slug = makeSlug(book.title);
+    navigate(`/book/${slug}/bookdetails`, { state: { id: book._id } });
   };
 
   useEffect(() => {
-    dispatch(fetchLatestBooks());
+    dispatch(searchBooks());
   }, [dispatch]);
 
-  // ...existing rendering code uses books array...
+  // Filtered search
+  const filteredBooks = Books.filter((book) => {
+    const titleMatch = book.title.toLowerCase().includes(search.toLowerCase());
+    const authorMatch = book.author?.toLowerCase().includes(search.toLowerCase());
+    const keywordsMatch = book.keywords?.some((kw) =>
+      kw.toLowerCase().includes(search.toLowerCase())
+    );
 
-
+    return titleMatch || authorMatch || keywordsMatch;
+  });
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-slate-800 mb-8">
+    <Box sx={{ minHeight: "100vh", bgcolor: "grey.50", py: 6 }}>
+      <Container maxWidth="lg">
+        <Typography
+          variant="h4"
+          fontWeight="bold"
+          color="text.primary"
+          gutterBottom
+        >
           Book Collection
-        </h1>
+        </Typography>
 
-        {/* Responsive grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 justify-items-center">
-          {Books.map((book) => (
-            <div
-              key={book.id || book._id}
-              onClick={() => handleView(book)}
-              className="flex flex-col group cursor-pointer bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all p-4 max-w-[350px] w-full"
+        {/* Search bar */}
+        <Box display="flex" justifyContent="center" mb={4}>
+          <TextField
+            label="Search by title, author, or keyword..."
+            variant="outlined"
+            fullWidth
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            sx={{
+              maxWidth: 500,
+              bgcolor: "white",
+              borderRadius: 2,
+            }}
+          />
+        </Box>
+
+        {/* Grid of books */}
+        <Grid container spacing={4}>
+          {filteredBooks.map((book) => (
+            <Grid
+              key={book._id}
+              xs={{ span: 12 }}
+              sm={{ span: 6 }}
+              md={{ span: 4 }}
+              lg={{ span: 3 }}
             >
-              {/* Image */}
-              <div className="relative overflow-hidden rounded-lg">
-                <img
-                  src={`http://localhost:7000/${book.coverImage}`}
-                  alt={book.title}
-                  className="w-full h-[300px] object-cover rounded-md group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all"></div>
-              </div>
-
-              {/* Content */}
-              <div className="mt-4 flex-1 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-slate-800 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                    {book.title}
-                  </h3>
-                  <p className="text-sm text-slate-600 mt-1 truncate">
-                    {book.author}
-                  </p>
-                </div>
-
-                {/* Action buttons */}
-                {isAdmin && (
-                  <div className="mt-4 flex gap-3">
-                    <button
-                      onClick={() => handleEdit(book._id)}
-                      className="flex-1 px-3 py-1 text-sm rounded-md bg-blue-500 text-white hover:bg-blue-600 transition"
+              <Card
+                sx={{
+                  borderRadius: 3,
+                  boxShadow: 3,
+                  transition: "0.3s",
+                  "&:hover": { boxShadow: 6, transform: "translateY(-4px)" },
+                }}
+              >
+                <CardActionArea onClick={() => handleView(book)}>
+                  <CardMedia
+                    component="img"
+                    height="280"
+                    image={`http://localhost:7000/${book.coverImage}`}
+                    alt={book.title}
+                    sx={{
+                      borderTopLeftRadius: 12,
+                      borderTopRightRadius: 12,
+                      objectFit: "cover",
+                    }}
+                  />
+                  <CardContent>
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight="bold"
+                      color="text.primary"
+                      noWrap
                     >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(book)}
-                      className="flex-1 px-3 py-1 text-sm rounded-md bg-red-500 text-white hover:bg-red-600 transition"
+                      {book.title}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mt: 0.5 }}
+                      noWrap
                     >
-                      Delete
-                    </button>
-                    
-                   
-                  </div>
-                 
-                )}
-              </div>
-            </div>
+                      {book.author}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            </Grid>
           ))}
-        </div>
-
-        {/* Confirm Delete Modal */}
-        {showConfirm && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-xl shadow-xl w-[90%] max-w-sm">
-              <h2 className="text-lg font-bold text-slate-800 mb-2">
-                Confirm Delete
-              </h2>
-              <p className="text-slate-600 mb-4">
-                Are you sure you want to delete {" "}
-                <span className="font-semibold">{selectedBook?.title}</span>?
-              </p>
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setShowConfirm(false)}
-                  className="px-4 py-2 rounded-md bg-slate-200 hover:bg-slate-300 text-slate-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmDelete}
-                  className="px-4 py-2 rounded-md bg-red-500 text-white hover:bg-red-600"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+        </Grid>
+      </Container>
+    </Box>
   );
 }

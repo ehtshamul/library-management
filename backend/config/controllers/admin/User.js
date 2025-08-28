@@ -12,8 +12,8 @@ const {
 // Cookie options for refresh token
 const cookieOpts = {
   httpOnly: true,
-  sameSite: "lax", // 'none' if cross-site, must use secure
-  secure: process.env.NODE_ENV === "production",
+  sameSite: "none", // 'none' if cross-site, must use secure
+  secure: false,
   path: "/", // send cookie to all routes
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
@@ -83,7 +83,10 @@ const login = async (req, res) => {
 
     res.json({
       accessToken,
+      refreshToken, // for non-cookie clients
+      success: true,
       user: { id: user._id, name: user.name, email: user.email, role: user.role },
+
     });
   } catch (error) {
     console.error(error);
@@ -94,7 +97,7 @@ const login = async (req, res) => {
 // ------------------ REFRESH TOKEN ------------------
 const refresh = async (req, res) => {
   try {
-    const token = req.cookies?.rt;
+    const token = req.cookies?.rt || req.body?.refreshToken;
     if (!token) return res.status(401).json({ message: "No refresh token" });
 
     const payload = verifyRefresh(token);

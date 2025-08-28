@@ -1,5 +1,5 @@
 // auth.js
-import { api ,getBooks } from "./api";
+import { api, getBooks } from "./api";
 
 
 // auth .js 
@@ -24,3 +24,19 @@ export const getAllBooks = () => getBooks.get("/getbooks");
 export const getBookById = (id) => api.get(`/${id}`);
 
 export const deleteBook = (id) => api.delete(`/${id}`);
+export const searchBooks = (query) =>
+  getBooks.get("/search", { params: { query } });
+// get approved admin 
+// Approve or update review status. Accepts an optional body (e.g. { status: 'Approved' }).
+
+
+
+export const addreview = (reviewdata) => {
+  return getBooks.post("/add", reviewdata);
+};
+export const showview = (id) => {
+  return getBooks.get(`/show/${id}`);
+};
+export const deleteReview = (id) => {
+  return getBooks.delete(`/${id}`);
+};
