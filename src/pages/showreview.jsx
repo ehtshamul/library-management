@@ -1,7 +1,7 @@
 import { Star, User, Calendar } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import React, { useEffect, useState } from "react";
-import { showReview, reviewdelete } from "../store/reviewSlice";
+import { showReview , } from "../store/reviewSlice";
 
 export default function ReviewsDisplay({ BookID }) {
   const dispatch = useDispatch();

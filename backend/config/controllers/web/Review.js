@@ -45,33 +45,46 @@ const delreview = async (req, res) => {
   }
 };
 
+// Get Approved Reviews for Book
+const getApproved = async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!status) {
+      return res.status(400).json({ message: "Status is required" });
+    }
 
+    // Normalize input (e.g. Approved, Rejected, Pending)
+    const normalizedStatus =
+      status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+
+    // Update review status
+    const reviewDoc = await review.findByIdAndUpdate(
+      req.params.id,
+      { status: normalizedStatus },
+      { new: true } // return updated document
+    ).populate("userID", "name");
+
+    if (!reviewDoc) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+
+    res.status(200).json({
+      review: reviewDoc,
+      message: `Review status updated to ${normalizedStatus}`,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
 
 // Get Approved Reviews for Book
-const showview = async (req, res) => {
-  try {
-    // include userID so frontend can check ownership (populate user name and id)
-    const reviews = await review
-      .find({ bookID: req.params.id, status: "Approved" })
-      .populate("userID", "name")
-      .select("rating comment createdAt userID");
+const showview = async (req,res)=>{
+  try{
+    const reviews = await review.find({bookID:req.params.id,status:"Approved"}).populate("userID","name")
+    .select("rating comment createdAt");
     res.status(200).json({ reviews, message: "success" });
 
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
-
-  }
-}
-//  get show  for dashboard reviews  
-const adminview = async (req, res) => {
-  try {
-    const reviews= await review.find().populate("userID", "name").populate("bookID", "title").select("rating comment status createdAt userID bookID");
-    res.status(200).json({ reviews, message: "success" });
-
-
-
-    
-  } catch (error) {
+  }catch (error){
     res.status(500).json({ message: "Server error", error: error.message });
 
   }
@@ -80,4 +93,4 @@ const adminview = async (req, res) => {
 
 
 
-module.exports = { addReview, delreview, adminview, showview };
+module.exports = { addReview, delreview , getApproved, showview};
