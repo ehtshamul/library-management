@@ -35,8 +35,16 @@ const delreview = async (req, res) => {
     if (!reviewToDelete) return res.status(404).json({ message: "Not found" });
 
     // Check if the logged-in user is the owner
-    if (reviewToDelete.userID.toString() !== req.user.id.toString())
+    // Allow delete if user is owner or has Admin role
+    const ownerId = reviewToDelete.userID?._id || reviewToDelete.userID;
+    const requesterId = req.user.id;
+    const isOwner = ownerId && requesterId && ownerId.toString() === requesterId.toString();
+    const isAdmin = req.user.role && req.user.role.toLowerCase() === "admin";
+
+    if (!isOwner && !isAdmin) {
+      console.log("Delete forbidden - owner:", ownerId, "requester:", requesterId, "role:", req.user.role);
       return res.status(403).json({ message: "Cannot delete" });
+    }
 
     await reviewToDelete.deleteOne();
     res.json({ message: "Deleted successfully", review: reviewToDelete });
@@ -78,13 +86,13 @@ const getApproved = async (req, res) => {
 };
 
 // Get Approved Reviews for Book
-const showview = async (req,res)=>{
-  try{
-    const reviews = await review.find({bookID:req.params.id,status:"Approved"}).populate("userID","name")
-    .select("rating comment createdAt");
+const showview = async (req, res) => {
+  try {
+    const reviews = await review.find({ bookID: req.params.id, status: "Approved" }).populate("userID", "name")
+      .select("rating comment createdAt");
     res.status(200).json({ reviews, message: "success" });
 
-  }catch (error){
+  } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
 
   }
@@ -93,4 +101,4 @@ const showview = async (req,res)=>{
 
 
 
-module.exports = { addReview, delreview , getApproved, showview};
+module.exports = { addReview, delreview, getApproved, showview };

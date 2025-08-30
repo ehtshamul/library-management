@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import * as api from "../server/auth";
 
+
+
 // thunk to add review
 export const addReview = createAsyncThunk(
   "reviews/add",
@@ -28,7 +30,18 @@ export const showReview = createAsyncThunk(
     }
   }
 );
-
+export const deletereview = createAsyncThunk(
+  "reviews/delete",
+  async (Reviewsid, thunkApi) => {
+    try {
+      const response = await api.deleteReview(Reviewsid);
+      // backend returns { message, review } - normalize to return the deleted review
+      return response.data?.review || response.data;
+    } catch (error) {
+      return thunkApi.rejectWithValue(error.response?.data || "Server error");
+    }
+  }
+);
 
 const initialState = {
   reviews: [],
@@ -54,8 +67,26 @@ const reviewSlice = createSlice({
         state.status = "failed";
         state.error = action.payload;
       })
+      // delete review 
 
-  
+      .addCase(deletereview.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(deletereview.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        // action.payload may be the deleted review or an object containing .review
+        const deleted = action.payload?.review || action.payload;
+        const deletedId = deleted?._id || deleted?.id;
+        if (deletedId) {
+          state.reviews = state.reviews.filter(
+            (review) => (review._id || review.id) !== deletedId
+          );
+        }
+      })
+      .addCase(deletereview.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      })
 
       // show reviews
       .addCase(showReview.pending, (state) => {

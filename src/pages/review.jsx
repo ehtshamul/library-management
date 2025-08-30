@@ -24,7 +24,7 @@ export default function BookReviewForm({ BookID }) {
             setError('You must be logged in to submit a review.');
             return;
         }
-        
+
 
         if (!formData.bookID || !formData.rating || !formData.comment.trim()) {
             setError('Please provide rating and a short comment.');
@@ -37,13 +37,19 @@ export default function BookReviewForm({ BookID }) {
                 addReview({ ...formData, userID: auth.user.id })
             ).unwrap();
 
+            // Re-fetch reviews so we get populated user data and consistent shape
+            try {
+                await Dispatch(require('../store/reviewSlice').showReview(formData.bookID));
+            } catch (e) {
+                // ignore fetch error here; UI will update on next load
+            }
 
             setFormData((prev) => ({ ...prev, rating: 0, comment: '' }));
             setHoverRating(0);
             setError(null);
 
         } catch (err) {
-           
+
             let message = 'Failed to submit review';
             try {
                 if (typeof err === 'string') {

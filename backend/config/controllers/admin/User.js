@@ -12,7 +12,7 @@ const {
 // Cookie options for refresh token
 const cookieOpts = {
   httpOnly: true,
-  sameSite: "none", // 'none' if cross-site, must use secure
+  sameSite: "lax", // 'none' if cross-site, must use secure
   secure: false,
   path: "/", // send cookie to all routes
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
