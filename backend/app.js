@@ -37,25 +37,35 @@ if (!fs.existsSync(uploadsDir)) {
 app.use('/uploads', express.static(uploadsDir));
 
 // Middleware
+// Allow common dev ports explicitly and any localhost/127.0.0.1 origin dynamically
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:3000",
   "http://127.0.0.1:5173",
-  "http://127.0.0.1:5174"
+  "http://127.0.0.1:5174",
+  "http://127.0.0.1:3000",
 ];
+
+function isLocalDevOrigin(origin) {
+  try {
+    return /^https?:\/\/(localhost|127\.0\.0\.1)(:\\d+)?$/.test(origin);
+  } catch (_) {
+    return false;
+  }
+}
 
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.log(`Blocked origin: ${origin}`);
-      callback(new Error("Not allowed by CORS"));
+
+    if (allowedOrigins.includes(origin) || isLocalDevOrigin(origin)) {
+      return callback(null, true);
     }
+
+    console.log(`Blocked origin: ${origin}`);
+    return callback(new Error("Not allowed by CORS"));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
