@@ -1,4 +1,3 @@
-// ...existing code...
 const { User, RefreshToken } = require("../../models/admin/User");
 const crypto = require("crypto");
 const {
@@ -10,11 +9,11 @@ const {
   compare,
 } = require("../../utils/Token");
 
-// Cookie options for refresh token
+
 const cookieOpts = {
   httpOnly: true,
-  sameSite: "lax",
-  secure: false,
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  secure: false, 
   path: "/",
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
@@ -31,13 +30,20 @@ function extractClient(req) {
 }
 
 async function persistRefreshToken(token, userId, client) {
-  const tokenHash = await hash(token);
-  return RefreshToken.create({
-    hash: tokenHash,
-    userId,
-    userAgent: client.userAgent,
-    ipAddress: client.ip,
-  });
+  try {
+    const tokenHash = await hash(token);
+    const refreshToken = await RefreshToken.create({
+      hash: tokenHash,
+      userId,
+      userAgent: client.userAgent,
+      ipAddress: client.ip,
+    });
+    console.log("âœ… Refresh token saved to MongoDB:", refreshToken._id);
+    return refreshToken;
+  } catch (error) {
+    console.error("âŒ Failed to save refresh token:", error);
+    throw error;
+  }
 }
 
 // ------------------ SIGNUP ------------------
@@ -65,7 +71,7 @@ const signup = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role },
+      user: { id: user._id, user, name: user.name, email: user.email, role: user.role },
     });
   } catch (error) {
     console.error("Signup error:", error);
@@ -75,6 +81,10 @@ const signup = async (req, res) => {
 
 // ------------------ LOGIN ------------------
 const login = async (req, res) => {
+  console.log("🔐 Login attempt:", { email: req.body.email, hasPassword: !!req.body.password });
+  console.log("📝 Request body:", req.body);
+  console.log("🔑 Headers:", req.headers);
+
   const { email, password } = req.body;
 
   if (!email || !password)
@@ -84,10 +94,14 @@ const login = async (req, res) => {
 
   try {
     const user = await User.findOne({ email });
-    if (!user || !(await user.comparePassword(password)))
+    console.log("👤 User found:", user ? "Yes" : "No");
+
+    if (!user || !(await user.comparePassword(password))) {
+      console.log("❌ Authentication failed");
       return res
         .status(401)
         .json({ success: false, message: "Invalid credentials" });
+    }
 
     const tokenId = crypto.randomUUID();
     const accessToken = signAccess(user);
@@ -99,6 +113,7 @@ const login = async (req, res) => {
     let saved;
     try {
       saved = await persistRefreshToken(refreshToken, user._id, client);
+      console.log("âœ… Refresh token persisted successfully for user:", user._id);
     } catch (err) {
       console.error("Failed to persist refresh token on login:", err);
       return res
@@ -163,8 +178,10 @@ const refresh = async (req, res) => {
     }
 
     if (!storedToken) {
-      // Potential token reuse/compromise: remove all tokens for user
+      // Potential token reuse/compromise: remove all tokens for user and clear cookie
       await RefreshToken.deleteMany({ userId: user._id });
+      console.log("⚠️ Potential token reuse detected, all tokens removed for user:", user._id);
+      // Clear cookie on client
       res.clearCookie("rt", { ...cookieOpts, maxAge: 0 });
       return res
         .status(401)
@@ -180,6 +197,7 @@ const refresh = async (req, res) => {
     let newSaved;
     try {
       newSaved = await persistRefreshToken(newRefreshToken, user._id, client);
+      console.log("âœ… New refresh token persisted during rotation");
     } catch (err) {
       console.error("Failed to persist new refresh token during rotation:", err);
       return res
@@ -190,8 +208,9 @@ const refresh = async (req, res) => {
     // Remove the old token after new one persisted
     try {
       await RefreshToken.deleteOne({ _id: storedToken._id });
+      console.log("âœ… Old refresh token removed");
     } catch (err) {
-      // Log but continue — old token removal failure shouldn't block issuance
+      // Log but continue â€” old token removal failure shouldn't block issuance
       console.error("Failed to delete old refresh token:", err);
     }
 
@@ -218,7 +237,8 @@ const logout = async (req, res) => {
     if (token) {
       const payload = verifyRefresh(token);
       if (payload) {
-        await RefreshToken.deleteMany({ userId: payload.sub });
+        const deletedCount = await RefreshToken.deleteMany({ userId: payload.sub });
+        console.log(`âœ… Deleted ${deletedCount.deletedCount} refresh tokens for user:`, payload.sub);
       }
     }
 
@@ -233,4 +253,3 @@ const logout = async (req, res) => {
 };
 
 module.exports = { signup, login, refresh, logout };
-// ...existing code...

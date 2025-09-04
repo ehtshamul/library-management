@@ -13,11 +13,13 @@ import {
   Globe,
   Hash,
 } from "lucide-react";
+import BookCard from "./borrowform";
 
 export default function BookDetail() {
   const [book, setBook] = useState(null);
   const [progress, setProgress] = useState(0);
-  const [downloading, setDownloading] = useState(false);
+
+  const [showBookCard, setShowBookCard] = useState(false);
 
   const { slug } = useParams();
   const location = useLocation();
@@ -43,38 +45,9 @@ export default function BookDetail() {
     }
     fetchBook();
   }, [id, slug]);
-
-  // const handleDownload = async () => {
-  //   try {
-  //     setDownloading(true);
-  //     setProgress(0);
-
-  //     const response = await axios.get(book.previewLink, {
-  //       responseType: "blob",
-  //       onDownloadProgress: (progressEvent) => {
-  //         if (progressEvent.total) {
-  //           const percent = Math.round(
-  //             (progressEvent.loaded * 100) / progressEvent.total
-  //           );
-  //           setProgress(percent);
-  //         }
-  //       },
-  //     });
-
-  //     // ✅ Create Blob download
-  //     const url = window.URL.createObjectURL(new Blob([response.data]));
-  //     const link = document.createElement("a");
-  //     link.href = url;
-  //     link.setAttribute("download", `${book.title || "file"}.pdf`);
-  //     document.body.appendChild(link);
-  //     link.click();
-  //     link.remove();
-  //   } catch (error) {
-  //     console.error("Download failed", error);
-  //   } finally {
-  //     setDownloading(false);
-  //   }
-  // };
+  const toggleBookCard = () => {
+    setShowBookCard((prev) => !prev); // flips true/false
+  };
 
   if (!book) {
     return (
@@ -112,8 +85,15 @@ export default function BookDetail() {
               </div>
             </div>
 
+
+            
+
             {/* Book Details */}
             <div className="lg:col-span-3 space-y-8">
+              <div>  <button onClick={toggleBookCard} className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md">
+              {showBookCard ? " Borrow now" : "Borrow Form"}
+            </button> </div>
+            {showBookCard && <BookCard book={book} />}
               {/* Title and Author */}
               <div>
                 <h1 className="text-4xl font-bold text-gray-900 leading-tight mb-4">

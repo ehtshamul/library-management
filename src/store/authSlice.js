@@ -101,6 +101,28 @@ export const refreshToken = createAsyncThunk(
     }
   }
 );
+export const forgetpassword = createAsyncThunk(
+  "auth/forgetpassword",
+  async (email, { rejectWithValue }) => {
+    try {
+      const response = await api.forgetpassword(email);
+      return response.data; // expects { message: "OTP sent to email" }
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: error.message });
+    }
+  }
+);
+export const resetPassword = createAsyncThunk(
+  "auth/resetPassword",
+  async ({ email, otp, newPassword, confirmPassword }, { rejectWithValue }) => {
+    try {
+      const response = await api.resetPassword(email, otp, newPassword, confirmPassword);
+      return response.data; // expects { message: "Password reset successful" }
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: error.message });
+    }
+  }
+);
 
 // ================= Auth Slice =================
 const authSlice = createSlice({
@@ -180,6 +202,14 @@ const authSlice = createSlice({
         state.status = "succeeded";
         state.accessToken = action.payload.accessToken;
         state.isAuthenticated = true;
+        state.error = null;
+      })
+      .addCase(forgetpassword.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.error = null;
+      })
+      .addCase(resetPassword.fulfilled, (state, action) => {
+        state.status = "succeeded";
         state.error = null;
       })
 

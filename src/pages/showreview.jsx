@@ -39,7 +39,7 @@ export default function ReviewsDisplay({ BookID }) {
       setDeletingId(null);
     }
   };
-  
+
 
   const StarRating = ({ rating = 0 }) => (
     <div className="flex items-center gap-1">
@@ -87,63 +87,63 @@ export default function ReviewsDisplay({ BookID }) {
       </h3>
 
       {reviews.map((review, index) => {
-  const ownerId = review.userID?._id || review.userID?.id || review.userID || null;
-  const currentUserId = auth.user?._id || auth.user?.id || null;
-  const isOwner = ownerId && currentUserId && ownerId.toString() === currentUserId.toString();
+        const ownerId = review.userID?._id || review.userID?.id || review.userID || null;
+        const currentUserId = auth.user?._id || auth.user?.id || null;
+        const isOwner = ownerId && currentUserId && ownerId.toString() === currentUserId.toString();
 
-  return (
-    <div
-      key={review._id || index}
-      className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200"
-    >
-      {/* Header */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-            <User className="w-5 h-5 text-gray-600" />
-          </div>
-
-          <div>
-            <p className="font-medium text-gray-900">
-              {review.userID?.name || "Anonymous"}
-            </p>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <Calendar className="w-4 h-4" />
-              {review.createdAt
-                ? new Date(review.createdAt).toLocaleDateString()
-                : "Unknown date"}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Star Rating */}
-      <StarRating rating={review.rating || 0} />
-
-      {/* Review Comment */}
-      <p className="text-gray-700 leading-relaxed mt-3">
-        {review.comment || "No comment"}
-      </p>
-
-      {/* Delete Button */}
-      {isOwner && (
-        <div className="mt-4 flex justify-end">
-          <button
-            onClick={() => handleDelete(review._id || review.id)}
-            disabled={deletingId === (review._id || review.id)}
-            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed"
+        return (
+          <div
+            key={review._id || index}
+            className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200"
           >
-            {deletingId === (review._id || review.id) ? (
-              <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              "Delete"
+            {/* Header */}
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                  <User className="w-5 h-5 text-gray-600" />
+                </div>
+
+                <div>
+                  <p className="font-medium text-gray-900">
+                    {review.userID?.name || "Anonymous"}
+                  </p>
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <Calendar className="w-4 h-4" />
+                    {review.createdAt
+                      ? new Date(review.createdAt).toLocaleDateString()
+                      : "Unknown date"}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Star Rating */}
+            <StarRating rating={review.rating || 0} />
+
+            {/* Review Comment */}
+            <p className="text-gray-700 leading-relaxed mt-3">
+              {review.comment || "No comment"}
+            </p>
+
+            {/* Delete Button */}
+            {isOwner && (
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={() => handleDelete(review._id || review.id)}
+                  disabled={deletingId === (review._id || review.id)}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {deletingId === (review._id || review.id) ? (
+                    <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    "Delete"
+                  )}
+                </button>
+              </div>
             )}
-          </button>
-        </div>
-      )}
-    </div>
-  );
-})}
+          </div>
+        );
+      })}
     </div>
   );
 }

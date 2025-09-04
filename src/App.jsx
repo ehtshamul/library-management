@@ -4,7 +4,7 @@ import Nav from "./components/Nav";
 import Footer from "./components/Footer";
 import LoginPage from "./components/Login";
 import ForgotPassword from "./components/forgetpassword";
-import SignupPage from "./components/Siguppage"; // Corrected import path
+import SignupPage from "./components/Siguppage";
 
 import AdminDashboard from "./pages/AdminDashboard";
 import AddBookForm from "./pages/Addbook";
@@ -13,6 +13,7 @@ import BookGrid from "./pages/Bookesview";
 import AdminReviews from "./pages/AdminReviews";
 import BookDetail from "./pages/BookDetail";
 import AdminRevbooks from "./pages/Adminbooks";
+import BorrowedBooks from "./pages/retureborrow"
 
 
 function App() {
@@ -56,6 +57,7 @@ function App() {
 
         {/* bookd Details */}
         <Route path ='/book/:slug/bookdetails' element={<BookDetail/>}/>
+        <Route path ='/book/returebooks' element={<BorrowedBooks/>}/>
 
        
       </Routes>
