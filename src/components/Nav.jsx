@@ -102,6 +102,7 @@ export default function Nav() {
                   Books Review
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 group-hover:w-full transition-all duration-300"></span>
                 </Link>
+              
               </>
             )}
 
@@ -212,6 +213,7 @@ export default function Nav() {
                       </svg>
                       <span className="truncate">Books Review</span>
                     </Link>
+                
                   </>
                 )}
 

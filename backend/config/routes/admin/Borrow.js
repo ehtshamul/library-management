@@ -4,9 +4,9 @@ const {auth} = require("../../middleware/auth");
 const express = require("express");
 const router = express.Router();
 
-router.post("/:bookId", auth(), borrowbook);
-router.post("/return/:borrowId", auth(), returnbooks);
-router.get("/:userId", auth(), getUserBorrows);
+router.post("/:bookId", auth(["admin", "Auth" ,"User"  ]) ,borrowbook);
+router.post("/return/:borrowId", returnbooks);
+router.get("/:userId",  getUserBorrows);
 
 
 module.exports = router;

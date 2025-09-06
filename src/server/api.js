@@ -3,20 +3,28 @@ import axios from "axios";
 // =======================
 // Axios Instances
 // =======================
+const API_BASE = import.meta?.env?.VITE_API_BASE_URL || "http://localhost:7000";
+
 export const api = axios.create({
-  baseURL: "http://localhost:7000/api/auth",
+  baseURL: `${API_BASE}/api/auth`,
   withCredentials: true,
   timeout: 10000,
 });
 
 export const getBooks = axios.create({
-  baseURL: "http://localhost:7000/api/web",
+  baseURL: `${API_BASE}/api/web`,
+  withCredentials: true,
+  timeout: 10000,
+});
+
+export const adminApi = axios.create({
+  baseURL: `${API_BASE}/api/admin`,
   withCredentials: true,
   timeout: 10000,
 });
 
 const refreshApi = axios.create({
-  baseURL: "http://localhost:7000/api/auth",
+  baseURL: `${API_BASE}/api/auth`,
   withCredentials: true,
   timeout: 10000,
 });
@@ -77,6 +85,7 @@ const refreshToken = async () => {
     // Update default headers
     api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
     getBooks.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
+    adminApi.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
 
     console.log("✅ Token refreshed");
     return newToken;
@@ -185,5 +194,6 @@ const attachResponseInterceptor = (instance) => {
 
 attachResponseInterceptor(api);
 attachResponseInterceptor(getBooks);
+attachResponseInterceptor(adminApi);
 
 export default api;

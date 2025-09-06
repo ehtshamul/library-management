@@ -14,6 +14,7 @@ import AdminReviews from "./pages/AdminReviews";
 import BookDetail from "./pages/BookDetail";
 import AdminRevbooks from "./pages/Adminbooks";
 import BorrowedBooks from "./pages/retureborrow"
+import BorrowTrend from "./chart/borrowtre";
 
 
 function App() {
@@ -58,6 +59,7 @@ function App() {
         {/* bookd Details */}
         <Route path ='/book/:slug/bookdetails' element={<BookDetail/>}/>
         <Route path ='/book/returebooks' element={<BorrowedBooks/>}/>
+        <Route path ='/book/Analytics' element={<BorrowTrend/>}/>
 
        
       </Routes>

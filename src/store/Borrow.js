@@ -38,6 +38,17 @@ export const getUserBorrows = createAsyncThunk(
     }
   }
 );
+export const getTrendingBooks = createAsyncThunk(
+  "books/getTrending",
+  async (_, thunkAPI) => {
+    try {
+      const response = await api.getTrendingBooks();
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data || "Error");
+    }
+  }
+);  
 
 // 🔹 Initial State
 const initialState = {
@@ -70,6 +81,11 @@ const borrowSlice = createSlice({
         state.error = null;
       })
       .addCase(getUserBorrows.fulfilled, (state, action) => {
+        state.borrow = action.payload;
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(getTrendingBooks.fulfilled, (state, action) => {
         state.borrow = action.payload;
         state.loading = false;
         state.error = null;

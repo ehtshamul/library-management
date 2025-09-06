@@ -1,8 +1,14 @@
-
 const Books = require("../../models/admin/Addbook");
+const mongoose = require("mongoose");
+const path = require("path");
 
-// book controllers
-// Helper to coerce input into an array
+// ✅ Helper: normalize file path (fix Windows backslashes & remove absolute path)
+const normalizePath = (filePath) => {
+  if (!filePath) return "";
+  return filePath.replace(/\\/g, "/").replace(path.resolve() + "/", "");
+};
+
+// ✅ Helper to coerce input into an array
 const parseArrayField = (field) => {
   if (!field) return [];
   if (Array.isArray(field)) return field;
@@ -24,6 +30,7 @@ const parseArrayField = (field) => {
   return [];
 };
 
+// 📌 Add new book
 const books = async (req, res) => {
   const {
     title,
@@ -45,11 +52,10 @@ const books = async (req, res) => {
     condition,
     previewLink,
     keywords,
-    audience
+    audience,
   } = req.body;
 
   try {
-    // Check required fields
     if (!title || !author || !isbn) {
       return res.status(400).json({
         success: false,
@@ -57,7 +63,6 @@ const books = async (req, res) => {
       });
     }
 
-    // Check if book already exists
     const existingBook = await Books.findOne({ isbn });
     if (existingBook) {
       return res.status(400).json({
@@ -66,13 +71,12 @@ const books = async (req, res) => {
       });
     }
 
-    // Parse array fields safely
+    // Parse array fields
     const categoriesArray = parseArrayField(categories);
     const tagsArray = parseArrayField(tags);
     const keywordsArray = parseArrayField(keywords);
     const coAuthorsArray = parseArrayField(coAuthors);
 
-    // Create new book
     const book = await Books.create({
       title,
       author,
@@ -91,24 +95,19 @@ const books = async (req, res) => {
       copies: copies ? parseInt(copies) : 1,
       shelf: shelf || "",
       condition: condition || "Good",
-      coverImage: req.file ? req.file.path : "",
+      coverImage: req.file ? normalizePath(req.file.path) : "",
       previewLink: previewLink || "",
       keywords: keywordsArray,
-      audience: audience || ""
+      audience: audience || "",
     });
-    
 
-    // Success response
     res.status(201).json({
       success: true,
       message: "Book added successfully",
-      book
+      book,
     });
-
   } catch (error) {
     console.error("Error adding book:", error);
-    // Handle specific errors
- 
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -116,37 +115,33 @@ const books = async (req, res) => {
   }
 };
 
-// updatebooks 
-
+// 📌 Update book
 const update = async (req, res) => {
   try {
-    // Parse array fields
     if (req.body.categories) req.body.categories = parseArrayField(req.body.categories);
     if (req.body.tags) req.body.tags = parseArrayField(req.body.tags);
     if (req.body.keywords) req.body.keywords = parseArrayField(req.body.keywords);
     if (req.body.coAuthors) req.body.coAuthors = parseArrayField(req.body.coAuthors);
 
-    // Handle file upload
-    if (req.file) req.body.coverImage = req.file.path;
+    if (req.file) {
+      req.body.coverImage = normalizePath(req.file.path);
+    }
 
-    // Convert numbers
     if (req.body.pages) req.body.pages = parseInt(req.body.pages);
     if (req.body.copies) req.body.copies = parseInt(req.body.copies);
 
     const updatedBook = await Books.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!updatedBook) return res.status(404).json({ message: "Book not found" });
-  
 
     res.status(200).json({ success: true, book: updatedBook });
   } catch (err) {
     console.error("Error updating book:", err);
     res.status(500).json({ message: "Internal server error" });
-   
   }
 };
-///getid 
-const mongoose = require("mongoose"); 
-  const Getid= async (req, res) => {
+
+// 📌 Get book by ID
+const Getid = async (req, res) => {
   const { id } = req.params;
   console.log("Fetching book ID:", id);
 
@@ -163,10 +158,11 @@ const mongoose = require("mongoose");
     res.status(500).json({ message: err.message });
   }
 };
-// delectboosk
-const delectboosk = async (req,res)=>{
+
+// 📌 Delete book
+const delectboosk = async (req, res) => {
   const { id } = req.params;
-  console.log("delect book ID:", id);
+  console.log("delete book ID:", id);
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ message: "Invalid book ID" });
@@ -175,12 +171,11 @@ const delectboosk = async (req,res)=>{
   try {
     const book = await Books.findByIdAndDelete(id);
     if (!book) return res.status(404).json({ message: "Book not found" });
-    res.json({message:"book delect successfully"});
+    res.json({ message: "Book deleted successfully" });
   } catch (err) {
-    console.error("Error in delect book:", err);
+    console.error("Error in delete book:", err);
     res.status(500).json({ message: err.message });
   }
-}
+};
 
-
-module.exports = {update ,books,Getid ,delectboosk};
+module.exports = { update, books, Getid, delectboosk };

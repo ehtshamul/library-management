@@ -1,61 +1,65 @@
 const express = require("express");
 const app = express();
-// Use Express built-in body parsers
 const Jwt = require("jsonwebtoken");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const path = require('path');
-const fs = require('fs');
-const xss = require('xss-clean');
-app.use(xss());
-const mongoSanitize = require('express-mongo-sanitize');
+const path = require("path");
+const fs = require("fs");
 
-app.use(mongoSanitize());
-const helmet = require('helmet');
-
-app.use(helmet());
-const rateLimit = require('express-rate-limit');
-
-app.use('/api/', rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 min
-  max: 100, // 100 requests per IP
-  message: "Too many requests from this IP, try again later"
-}));
-
-
+// 🔒 Security middlewares
+const xss = require("xss-clean");
+const mongoSanitize = require("express-mongo-sanitize");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 const cookieParser = require("cookie-parser");
+
+// Load background jobs
 require("./config/utils/borrowReminder.js");
-// Load environment variables from the backend folder's .env file
-dotenv.config({ path: path.resolve(__dirname, '.env') });
+
+// Load environment variables
+dotenv.config({ path: path.resolve(__dirname, ".env") });
+
+// ✅ Security middlewares
+app.use(xss());
+app.use(mongoSanitize());
+app.use(helmet());
+app.use(
+  "/api/",
+  rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 min
+    max: 1000,
+    message: "Too many requests from this IP, try again later",
+  })
+);
 
 app.use(cookieParser());
 
-// Import routes
-const userRouter = require("./config/routes/admin/User");
-const dashboardRouter = require("./config/routes/admin/Dashboard");
-const booksRouter = require("./config/routes/admin/books");
-const getBooksRouter = require("./config/routes/web/getbooks");
-const searchRouter = require("./config/routes/web/search");
-const reviewRouter = require("./config/routes/web/Review");
-const BorrowRouter = require("./config/routes/admin/Borrow");
-const forgetRouter =require("./config/routes/admin/forgetpassword")
-
-
-// Get the current directory path
+// ---------------------
+// 📂 Static Uploads Setup
+// ---------------------
 const currentDir = path.resolve();
+const uploadsDir = path.join(currentDir, "uploads");
 
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(currentDir, 'uploads');
+// Create uploads dir if missing
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Serve static files
-app.use('/uploads', express.static(uploadsDir));
+// ✅ Serve static uploads with CORS headers
+app.use(
+  "/uploads",
+  (req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+    res.header("Cross-Origin-Resource-Policy", "cross-origin");
+    next();
+  },
+  express.static(uploadsDir)
+);
 
-// Middleware
-// Allow common local dev origins. In production, set a stricter list via env.
+// ---------------------
+// 🌐 CORS Setup
+// ---------------------
 const devAllowedOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
@@ -69,48 +73,109 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",")
   : devAllowedOrigins;
 
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like Postman, mobile apps, curl)
-    if (!origin) return callback(null, true);
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
 
-    // Allow any localhost origin in development to simplify hot-reload ports
-    if (process.env.NODE_ENV !== 'production' && /^(https?:)?\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
-      return callback(null, true);
-    }
+      // Allow localhost in dev
+      if (
+        process.env.NODE_ENV !== "production" &&
+        /^(https?:)?\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
+      ) {
+        return callback(null, true);
+      }
 
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.log(`❌ Blocked origin: ${origin}`);
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,   // ✅ cookies/authorization headers allowed
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-}));
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.log(`❌ Blocked origin: ${origin}`);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  })
+);
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-// Debug middleware to log all requests
+// Debug requests
 app.use((req, res, next) => {
-  console.log(`🔍 ${req.method} ${req.path} - Origin: ${req.headers.origin} - Auth: ${req.headers.authorization ? 'Yes' : 'No'}`);
+  console.log(
+    `🔍 ${req.method} ${req.path} - Origin: ${req.headers.origin} - Auth: ${
+      req.headers.authorization ? "Yes" : "No"
+    }`
+  );
   next();
 });
 
-// Error handling middleware
+// ---------------------
+// 📦 Routes
+// ---------------------
+const userRouter = require("./config/routes/admin/User");
+const dashboardRouter = require("./config/routes/admin/Dashboard");
+const booksRouter = require("./config/routes/admin/books");
+const getBooksRouter = require("./config/routes/web/getbooks");
+const searchRouter = require("./config/routes/web/search");
+const reviewRouter = require("./config/routes/web/Review");
+const BorrowRouter = require("./config/routes/admin/Borrow");
+const forgetRouter = require("./config/routes/admin/forgetpassword");
+const borrowtreRouter= require("./config/routes/admin/brotrending")
+
+app.use("/api/auth", userRouter);
+app.use("/api/auth", dashboardRouter);
+app.use("/api/auth", booksRouter);
+app.use("/api/web", getBooksRouter);
+app.use("/api/web", searchRouter);
+app.use("/api/admin", forgetRouter);
+app.use("/api/web/reviews", reviewRouter);
+app.use("/api/auth/reviews", reviewRouter);
+app.use("/api/auth/borrow", BorrowRouter);
+app.use("/api/admin", borrowtreRouter);
+
+// ---------------------
+// 🛠 Test & Error Handling
+// ---------------------
+app.get("/", (req, res) => {
+  res.send("Backend working fine ✅");
+});
+
+// CORS errors
 app.use((err, req, res, next) => {
   if (err.message === "Not allowed by CORS") {
     return res.status(403).json({
       success: false,
-      message: "CORS error: Origin not allowed"
+      message: "CORS error: Origin not allowed",
     });
   }
   next(err);
 });
 
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error("Global error handler:", err);
+  res.status(500).json({
+    success: false,
+    message: "Internal server error",
+    error:
+      process.env.NODE_ENV === "development" ? err.message : "Something went wrong",
+  });
+});
+
+// 404 handler
+app.use("*", (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Route not found",
+  });
+});
+
+// ---------------------
+// 🔗 DB Connect + Server Start
+// ---------------------
 const connectDB = async () => {
   try {
     if (!process.env.MONGO_URI) {
@@ -122,8 +187,8 @@ const connectDB = async () => {
 
     const PORT = process.env.PORT || 7000;
     app.listen(PORT, () => {
-      console.log(`🚀 Server is running on port ${PORT}`);
-      console.log(`🌐 CORS enabled for origins: ${allowedOrigins.join(', ')}`);
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`🌐 CORS enabled for: ${allowedOrigins.join(", ")}`);
     });
   } catch (err) {
     console.error("❌ MongoDB connection failed:", err);
@@ -131,46 +196,4 @@ const connectDB = async () => {
   }
 };
 
-// Connect to database
 connectDB();
-
-// Routes
-app.use("/api/auth", userRouter);
-app.use("/api/auth", dashboardRouter);
-app.use("/api/auth", booksRouter);
-app.use("/api/web", getBooksRouter);
-app.use("/api/web", searchRouter);
-// forget password 
-app.use("/api/admin/" ,forgetRouter);
-// Review routes - mount once with proper path handling
-app.use("/api/web/reviews", reviewRouter);
-// get approved status 
-app.use("/api/auth/reviews", reviewRouter);
-// show all books for admin 
-
-
-// Fallback direct route to ensure borrow endpoint is reachable
-app.use("/api/auth/borrow", BorrowRouter);
-
-// Simple test route
-app.get("/", (req, res) => {
-  res.send("Backend working fine ✅");
-});
-
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error('Global error handler:', err);
-  res.status(500).json({
-    success: false,
-    message: "Internal server error",
-    error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
-  });
-});
-
-// Handle 404
-app.use('*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: "Route not found"
-  });
-});
