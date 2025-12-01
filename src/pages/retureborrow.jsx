@@ -45,15 +45,18 @@ const BorrowedBooks = () => {
       setReturningBookId(borrowId);
 
       // 🔹 API: PUT /api/auth/return/:borrowId  (body: { userId })
+      // Capture the returned book from current state before updating
+      const returnedBook = borrowedBooks.find((b) => b.borrowId === borrowId);
+
       await dispatch(returnBorrow({ borrowId, userId }));
 
       // Move book from active list to returned list
       setBorrowedBooks((prev) => prev.filter((b) => b.borrowId !== borrowId));
-      const returnedBook = borrowedBooks.find((b) => b.borrowId === borrowId);
+
       if (returnedBook) {
         setReturnedBooks((prev) => [
           ...prev,
-          { ...returnedBook, status: "returned" },
+          { ...returnedBook, status: "returned", returnDate: new Date().toISOString() },
         ]);
       }
     } catch (error) {
@@ -64,14 +67,23 @@ const BorrowedBooks = () => {
   };
 
   // Helpers
-  const formatDate = (dateString) =>
-    new Date(dateString).toLocaleDateString("en-US", {
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const d = new Date(dateString);
+    if (Number.isNaN(d.getTime())) return "N/A";
+    return d.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
     });
+  };
 
-  const isOverdue = (dueDate) => new Date(dueDate) < new Date();
+  const isOverdue = (dueDate) => {
+    if (!dueDate) return false;
+    const d = new Date(dueDate);
+    if (Number.isNaN(d.getTime())) return false;
+    return d < new Date();
+  };
 
   // Loading screen
   if (loading) {
@@ -119,12 +131,12 @@ const BorrowedBooks = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg font-semibold text-gray-900 truncate">
-                      {b.book.title}
+                      {b.book?.title ?? "Unknown title"}
                     </h3>
                     <p className="text-sm text-gray-600 flex items-center mt-1">
-                      <User className="h-4 w-4 mr-1" /> {b.book.author}
+                      <User className="h-4 w-4 mr-1" /> {b.book?.author ?? "Unknown author"}
                     </p>
-                    <p className="text-sm text-gray-500">ISBN: {b.book.isbn}</p>
+                    <p className="text-sm text-gray-500">ISBN: {b.book?.isbn ?? "N/A"}</p>
 
                     <div className="flex space-x-4 mt-3 text-sm">
                       <span className="text-gray-600 flex items-center">
@@ -132,11 +144,10 @@ const BorrowedBooks = () => {
                         {b.borrowdate ? formatDate(b.borrowdate) : "N/A"}
                       </span>
                       <span
-                        className={`flex items-center ${
-                          isOverdue(b.dueDate)
+                        className={`flex items-center ${isOverdue(b.dueDate)
                             ? "text-red-600"
                             : "text-gray-600"
-                        }`}
+                          }`}
                       >
                         <Calendar className="h-4 w-4 mr-1" /> Due:{" "}
                         {formatDate(b.dueDate)}
@@ -195,9 +206,9 @@ const BorrowedBooks = () => {
             {returnedBooks.map((b) => (
               <div key={b.borrowId} className="p-6">
                 <h3 className="text-lg font-semibold text-gray-900">
-                  {b.book.title}
+                  {b.book?.title ?? "Unknown title"}
                 </h3>
-                <p className="text-sm text-gray-600">Author: {b.book.author}</p>
+                <p className="text-sm text-gray-600">Author: {b.book?.author ?? "Unknown author"}</p>
                 <p className="text-sm text-gray-500">
                   Returned on: {formatDate(b.returnDate)}
                 </p>

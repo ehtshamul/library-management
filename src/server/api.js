@@ -10,6 +10,12 @@ export const api = axios.create({
   withCredentials: true,
   timeout: 10000,
 });
+export const landingApi = axios.create({
+  baseURL: `${API_BASE}/api/landing`,
+  withCredentials: true,
+  timeout: 10000,
+});
+
 
 export const getBooks = axios.create({
   baseURL: `${API_BASE}/api/web`,
@@ -36,23 +42,36 @@ const attachToken = (config) => {
   console.log("🔧 Request interceptor:", { url: config.url, method: config.method });
 
   // Don't add token for auth endpoints (login, signup, refresh)
-  if (config.url && ['/login', '/signup', '/refresh'].includes(config.url)) {
-    console.log("✅ Auth endpoint - no token needed");
-    return config;
+  // Use endsWith so both absolute and relative URLs are handled.
+  try {
+    const urlStr = config.url ? String(config.url) : '';
+    const authPaths = ['/login', '/signup', '/refresh'];
+    const isAuthEndpoint = authPaths.some((p) => urlStr.endsWith(p));
+    if (isAuthEndpoint) {
+      console.log('✅ Auth endpoint - no token needed');
+      return config;
+    }
+  } catch (e) {
+    // If anything goes wrong while checking, continue and attempt to attach token.
+    console.warn('Could not determine request url for auth check', e);
   }
 
-  const token = localStorage.getItem("accessToken");
+  const token = localStorage.getItem('accessToken');
   if (token) {
-    config.headers["Authorization"] = `Bearer ${token}`;
-    console.log("🔑 Token attached to request");
+    config.headers = config.headers || {};
+    config.headers['Authorization'] = `Bearer ${token}`;
+    console.log('🔑 Token attached to request');
   } else {
-    console.log("⚠️ No token available");
+    console.log('⚠️ No token available');
   }
   return config;
 };
 
 api.interceptors.request.use(attachToken);
 getBooks.interceptors.request.use(attachToken);
+// Ensure admin and landing axios instances also attach tokens
+adminApi.interceptors.request.use(attachToken);
+landingApi.interceptors.request.use(attachToken);
 
 // =======================
 // Refresh Token Logic
@@ -86,6 +105,8 @@ const refreshToken = async () => {
     api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
     getBooks.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
     adminApi.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
+    // also update landing API headers so contact/landing endpoints reuse the refreshed token if needed
+    landingApi.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
 
     console.log("✅ Token refreshed");
     return newToken;
@@ -195,5 +216,6 @@ const attachResponseInterceptor = (instance) => {
 attachResponseInterceptor(api);
 attachResponseInterceptor(getBooks);
 attachResponseInterceptor(adminApi);
+attachResponseInterceptor(landingApi);
 
 export default api;

@@ -123,7 +123,9 @@ const searchRouter = require("./config/routes/web/search");
 const reviewRouter = require("./config/routes/web/Review");
 const BorrowRouter = require("./config/routes/admin/Borrow");
 const forgetRouter = require("./config/routes/admin/forgetpassword");
-const borrowtreRouter= require("./config/routes/admin/brotrending")
+const borrowtreRouter= require("./config/routes/admin/brotrending");
+const contactRoutes = require('./config/routes/landing/contact');
+
 
 app.use("/api/auth", userRouter);
 app.use("/api/auth", dashboardRouter);
@@ -135,6 +137,8 @@ app.use("/api/web/reviews", reviewRouter);
 app.use("/api/auth/reviews", reviewRouter);
 app.use("/api/auth/borrow", BorrowRouter);
 app.use("/api/admin", borrowtreRouter);
+app.use("/api/landing", contactRoutes);
+
 
 // ---------------------
 // 🛠 Test & Error Handling

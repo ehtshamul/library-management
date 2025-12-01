@@ -5,6 +5,7 @@ import Footer from "./components/Footer";
 import LoginPage from "./components/Login";
 import ForgotPassword from "./components/forgetpassword";
 import SignupPage from "./components/Siguppage";
+import AdminDashboardmessage from "./front end site/adminmessage";
 
 import AdminDashboard from "./pages/AdminDashboard";
 import AddBookForm from "./pages/Addbook";
@@ -15,7 +16,10 @@ import BookDetail from "./pages/BookDetail";
 import AdminRevbooks from "./pages/Adminbooks";
 import BorrowedBooks from "./pages/retureborrow"
 import BorrowTrend from "./chart/borrowtre";
-
+import ContactUs from "./front end site/contact";
+import PrivacyPolicy from "./front end site/Privacy Policy"
+import AboutUs from "./front end site/aboutus"
+import Homepage from "./front end site/Home"
 
 function App() {
   return (
@@ -23,7 +27,8 @@ function App() {
       <Nav />
       <Routes>
         {/* Corrected element prop */}
-        <Route path="/" element={<BookGrid/>} />
+       <Route path="/" element={<Homepage/>} />
+        <Route path="/discover" element={<BookGrid/>} />
         <Route path="/login" element={<LoginPage />} />
         <Route path='/forgot-password' element={<ForgotPassword />} />
         <Route path="/signup" element={<SignupPage />} />
@@ -32,6 +37,7 @@ function App() {
           <AdminDashboard />
           </ProtectedRoute>
           } />
+          <Route path="/contact" element={<ContactUs />} />
          
         <Route path="/book/:id/edit" element={
           <ProtectedRoute adminOnly>
@@ -53,6 +59,13 @@ function App() {
             <AdminRevbooks />
           </ProtectedRoute>
         } />
+                <Route path="/admin/messages" element={
+                
+                    <AdminDashboardmessage/>
+                
+                } />
+        <Route path="/privacy-policy" element={<PrivacyPolicy/>} />
+        <Route path="/about-us" element={<AboutUs/>} />
 
 
 

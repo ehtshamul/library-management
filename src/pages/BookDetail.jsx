@@ -15,15 +15,20 @@ import {
 } from "lucide-react";
 import BookCard from "./borrowform";
 
+
 export default function BookDetail() {
   const [book, setBook] = useState(null);
   const [progress, setProgress] = useState(0);
+  const [suggects ,setSuggect]= useState('false')
 
   const [showBookCard, setShowBookCard] = useState(false);
 
   const { slug } = useParams();
   const location = useLocation();
   const { id } = location.state || {}; // navigate سے ملا ہوا id
+  const handleSug = () => {
+  setSuggest((prev) => !prev);
+};
 
   const formattedDate = book?.pubDate
     ? new Date(book.pubDate).toLocaleDateString("en-US", {
@@ -301,10 +306,15 @@ export default function BookDetail() {
           <h3 className="text-lg font-semibold mb-4">Add Review</h3>
           <BookReviewForm BookID={book._id} />
         </div>
+      
+        <div className="max-w-7xl mx-auto px-6 py-12 space-y-8">
+        
+    
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <ReviewsDisplay BookID={book._id} />
         </div>
       </div>
+    </div>
     </div>
   );
 }

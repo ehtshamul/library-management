@@ -64,7 +64,13 @@ export default function Nav() {
               </svg>
             </div>
             <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-blue-300 bg-clip-text text-transparent">
-              BookReview
+             
+              <Link 
+              to="/"
+className="hover:cursor-pointer hover:underline "
+
+              >               Wonder Stack Library
+</Link>
             </h2>
           </div>
 
@@ -72,7 +78,7 @@ export default function Nav() {
           <nav className="hidden lg:flex gap-4 xl:gap-8 items-center">
             <Link 
               className="text-gray-300 hover:text-white transition-all duration-300 font-medium relative group text-sm xl:text-base whitespace-nowrap" 
-              to="/"
+              to="/discover"
             >
               Browse
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 group-hover:w-full transition-all duration-300"></span>
@@ -100,6 +106,13 @@ export default function Nav() {
                   to="/admin/reviews/books"
                 >
                   Books Review
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 group-hover:w-full transition-all duration-300"></span>
+                </Link>
+                   <Link 
+                  className="text-gray-300 hover:text-white transition-all duration-300 font-medium relative group text-sm xl:text-base whitespace-nowrap" 
+                  to="/admin/messages"
+                >
+                  messages review
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 group-hover:w-full transition-all duration-300"></span>
                 </Link>
               

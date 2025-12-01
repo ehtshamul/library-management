@@ -1,6 +1,6 @@
 // auth.js
 import axios from "axios";
-import { api, getBooks, adminApi } from "./api";
+import { api, getBooks, adminApi, landingApi } from "./api";
 
 
 // auth .js 
@@ -64,13 +64,28 @@ export const getUserBorrows = (userId) => {
   return api.get(`/borrow/${userId}`);
 };
 
-export const forgetpassword =(email)=>{
-  return adminApi.post('/send-otp',{email});
+export const forgetpassword = (email) => {
+  return adminApi.post('/send-otp', { email });
 }
-export const resetPassword =(email, otp, newPassword, confirmPassword)=>{
-  return adminApi.post('/reset-password',{email, otp, newPassword, confirmPassword});
+export const resetPassword = (email, otp, newPassword, confirmPassword) => {
+  return adminApi.post('/reset-password', { email, otp, newPassword, confirmPassword });
 }
 export const getTrendingBooks = () => {
   return adminApi.get('/trending');
-  
+
 }
+export const submitContactForm = (formData) => {
+  console.log("📡 Contact Form API call to:", `/contact`, formData);
+  return landingApi.post(`/contact`, formData);
+};
+export const getAllMessages = () => {
+  console.log("📡 Get All Messages API call to:", `/`);
+  return landingApi.get('/');
+};
+export const replyToMessage = ({ id, replyText }) => {
+  console.log("📡 Reply to Message API call to:", `/reply`, { id, replyText });
+  return landingApi.post(`/reply`, { id, replyText });
+}
+
+
+
