@@ -47,50 +47,50 @@ export default function AboutUs() {
     { icon: TrendingUp, label: 'Annual Events', value: counters.events, suffix: '+', gradient: 'from-green-500 to-emerald-500' }
   ];
 
-  const teamMembers = [
-    {
-      name: 'Dr. Sarah Mitchell',
-      role: 'Chief Librarian',
-      image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop',
-      bio: 'PhD in Library Science with 20+ years of experience. Passionate about digital transformation in libraries.',
-      gradient: 'from-blue-500 to-purple-500'
-    },
-    {
-      name: 'James Rodriguez',
-      role: 'Head of Digital Resources',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop',
-      bio: 'Technology enthusiast specializing in digital archives and e-learning platforms.',
-      gradient: 'from-purple-500 to-pink-500'
-    },
-    {
-      name: 'Emily Chen',
-      role: 'Community Engagement Manager',
-      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop',
-      bio: 'Dedicated to creating inclusive programs that connect diverse communities through literature.',
-      gradient: 'from-pink-500 to-red-500'
-    },
-    {
-      name: 'Michael Thompson',
-      role: 'Acquisitions Director',
-      image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop',
-      bio: 'Expert in collection development with a keen eye for emerging literary trends.',
-      gradient: 'from-green-500 to-teal-500'
-    },
-    {
-      name: 'Lisa Anderson',
-      role: 'Youth Services Coordinator',
-      image: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=400&fit=crop',
-      bio: 'Creating magical reading experiences for children and young adults for over a decade.',
-      gradient: 'from-orange-500 to-yellow-500'
-    },
-    {
-      name: 'David Kumar',
-      role: 'Archives Specialist',
-      image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop',
-      bio: 'Preserving historical documents and rare collections with cutting-edge conservation techniques.',
-      gradient: 'from-indigo-500 to-blue-500'
-    }
-  ];
+  // const teamMembers = [
+  //   {
+  //     name: 'Dr. Sarah Mitchell',
+  //     role: 'Chief Librarian',
+  //     image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop',
+  //     bio: 'PhD in Library Science with 20+ years of experience. Passionate about digital transformation in libraries.',
+  //     gradient: 'from-blue-500 to-purple-500'
+  //   },
+  //   {
+  //     name: 'James Rodriguez',
+  //     role: 'Head of Digital Resources',
+  //     image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop',
+  //     bio: 'Technology enthusiast specializing in digital archives and e-learning platforms.',
+  //     gradient: 'from-purple-500 to-pink-500'
+  //   },
+  //   {
+  //     name: 'Emily Chen',
+  //     role: 'Community Engagement Manager',
+  //     image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop',
+  //     bio: 'Dedicated to creating inclusive programs that connect diverse communities through literature.',
+  //     gradient: 'from-pink-500 to-red-500'
+  //   },
+  //   {
+  //     name: 'Michael Thompson',
+  //     role: 'Acquisitions Director',
+  //     image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop',
+  //     bio: 'Expert in collection development with a keen eye for emerging literary trends.',
+  //     gradient: 'from-green-500 to-teal-500'
+  //   },
+  //   {
+  //     name: 'Lisa Anderson',
+  //     role: 'Youth Services Coordinator',
+  //     image: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=400&fit=crop',
+  //     bio: 'Creating magical reading experiences for children and young adults for over a decade.',
+  //     gradient: 'from-orange-500 to-yellow-500'
+  //   },
+  //   {
+  //     name: 'David Kumar',
+  //     role: 'Archives Specialist',
+  //     image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop',
+  //     bio: 'Preserving historical documents and rare collections with cutting-edge conservation techniques.',
+  //     gradient: 'from-indigo-500 to-blue-500'
+  //   }
+  // ];
 
   const testimonials = [
     {
@@ -243,7 +243,7 @@ export default function AboutUs() {
         </div>
       </section>
       {/* Team Section */}
-      <section className="relative py-16">
+      {/* <section className="relative py-16">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-12">
             <h2 className="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
@@ -284,7 +284,7 @@ export default function AboutUs() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Testimonials */}
       <section className="relative py-16">

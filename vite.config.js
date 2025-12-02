@@ -5,8 +5,16 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   base: "/",
-  server: {
-    port: 5173,
+server: {
+  host: true,
+  port: 5173,
+  strictPort: true,
+  allowedHosts: [
+    'localhost',
+    '8fae60a430d9.ngrok-free.app',  // your ngrok URL
+  ],
+},
+
     proxy: {
       "/api": {
         target: "http://localhost:7000",
@@ -26,4 +34,4 @@ export default defineConfig({
       },
     },
   },
-})
+)

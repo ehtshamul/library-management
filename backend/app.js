@@ -64,7 +64,11 @@ const devAllowedOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
   "http://localhost:5174",
+  "https://729f595a2fdb.ngrok-free.app",
+  "https://8fae60a430d9.ngrok-free.app",
+ "https://8fae60a430d9.ngrok-free.app",
   "http://127.0.0.1:5174",
+  "http://192.168.100.11:5173",
   "http://localhost:3000",
   "http://127.0.0.1:3000",
 ];
@@ -125,6 +129,10 @@ const BorrowRouter = require("./config/routes/admin/Borrow");
 const forgetRouter = require("./config/routes/admin/forgetpassword");
 const borrowtreRouter= require("./config/routes/admin/brotrending");
 const contactRoutes = require('./config/routes/landing/contact');
+const chatbotRoutes = require('./config/routes/landing/chatbot');
+
+// Landing chatbot route
+app.use("/api/chat", chatbotRoutes);
 
 
 app.use("/api/auth", userRouter);

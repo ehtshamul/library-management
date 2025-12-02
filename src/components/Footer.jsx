@@ -51,6 +51,7 @@ const Footer = () => {
       target="_blank"
       rel="noopener noreferrer"
       className="text-[#49709c] hover:text-blue-600 transition-all duration-300 transform hover:scale-150 hover:shadow-md hover:shadow-blue-200 p-3 rounded-full"
+      title="Follow on Facebook"
     >
       <i className="fab fa-facebook-f fa-lg"></i>
     </a>
@@ -60,6 +61,7 @@ const Footer = () => {
       target="_blank"
       rel="noopener noreferrer"
       className="text-[#49709c] hover:text-blue-400 transition-all duration-300 transform hover:scale-150 hover:shadow-md hover:shadow-blue-200 p-3 rounded-full"
+      title="Follow on X (Twitter)"
     >
       <i className="fab fa-twitter fa-lg"></i>
     </a>
@@ -69,6 +71,7 @@ const Footer = () => {
       target="_blank"
       rel="noopener noreferrer"
       className="text-[#49709c] hover:text-pink-500 transition-all duration-300 transform hover:scale-150 hover:shadow-md hover:shadow-pink-200 p-3 rounded-full"
+      title="Follow on Instagram"
     >
       <i className="fab fa-instagram fa-lg"></i>
     </a>
@@ -78,9 +81,21 @@ const Footer = () => {
       target="_blank"
       rel="noopener noreferrer"
       className="text-[#49709c] hover:text-blue-700 transition-all duration-300 transform hover:scale-150 hover:shadow-md hover:shadow-blue-300 p-3 rounded-full"
+      title="Connect on LinkedIn"
     >
       <i className="fab fa-linkedin-in fa-lg"> </i>
     </a>
+    {/* whatsapps  channel  */}
+    <a href="https://whatsapp.com/channel/0029Vb7Uo0hK5cD7xqJZZm2k"
+    
+    target="_blank" rel="noopener noreferrer" className="text-[#49709c] hover:text-green-500 transition-all duration-300 transform hover:scale-150 hover:shadow-md hover:shadow-green-200 p-3 rounded-full"
+    title="Join our WhatsApp Channel">
+      <i className="fab fa-whatsapp fa-lg"></i>
+    </a>
+      {/* whatsapps  group   with hover text */}
+      <a href="https://chat.whatsapp.com/LkOosGa01uf0hy4EeSDSYn" target="_blank" rel="noopener noreferrer" className="text-[#49709c] hover:text-green-500 transition-all duration-300 transform hover:scale-150 hover:shadow-md hover:shadow-green-200 p-3 rounded-full" title="Join our WhatsApp Group">
+        <i className="fab fa-whatsapp fa-lg"></i>
+      </a>
   </div>
 </div>
 

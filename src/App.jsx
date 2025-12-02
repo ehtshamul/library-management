@@ -5,7 +5,7 @@ import Footer from "./components/Footer";
 import LoginPage from "./components/Login";
 import ForgotPassword from "./components/forgetpassword";
 import SignupPage from "./components/Siguppage";
-import AdminDashboardmessage from "./front end site/adminmessage";
+import AdminDashboardmessage from "./frontend_site/adminmessage";
 
 import AdminDashboard from "./pages/AdminDashboard";
 import AddBookForm from "./pages/Addbook";
@@ -16,10 +16,10 @@ import BookDetail from "./pages/BookDetail";
 import AdminRevbooks from "./pages/Adminbooks";
 import BorrowedBooks from "./pages/retureborrow"
 import BorrowTrend from "./chart/borrowtre";
-import ContactUs from "./front end site/contact";
-import PrivacyPolicy from "./front end site/Privacy Policy"
-import AboutUs from "./front end site/aboutus"
-import Homepage from "./front end site/Home"
+import ContactUs from "./frontend_site/contact";
+import PrivacyPolicy from "./frontend_site/Privacy Policy"
+import AboutUs from "./frontend_site/aboutus"
+import Homepage from "./frontend_site/Home"
 
 function App() {
   return (
